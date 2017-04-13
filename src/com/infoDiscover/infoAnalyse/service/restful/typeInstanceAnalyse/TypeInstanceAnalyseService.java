@@ -1,6 +1,7 @@
 package com.infoDiscover.infoAnalyse.service.restful.typeInstanceAnalyse;
 
 import com.infoDiscover.infoAnalyse.service.restful.vo.MeasurableInstanceDetailInfoVO;
+import com.infoDiscover.infoAnalyse.service.restful.vo.RelationInfoDetailVO;
 import com.infoDiscover.infoAnalyse.service.restful.vo.TypeInstanceRelationsCycleVO;
 import com.infoDiscover.infoAnalyse.service.restful.vo.TypeInstanceRelationsDetailVO;
 import com.infoDiscover.infoAnalyse.service.util.DiscoverSpaceOperationUtil;
@@ -32,6 +33,14 @@ public class TypeInstanceAnalyseService {
     @Produces("application/json")
     public TypeInstanceRelationsDetailVO getTypeInstanceRelationsDetailInfo(@PathParam("discoverSpaceName")String discoverSpaceName, @PathParam("relationableId")String relationableId){
         TypeInstanceRelationsDetailVO resultInfo=DiscoverSpaceOperationUtil.getRelationableRelationsDetailInfoById(discoverSpaceName,relationableId);
+        return resultInfo;
+    }
+
+    @GET
+    @Path("/relationRelatedTypeInstancesExplore/{discoverSpaceName}/{relationId}")
+    @Produces("application/json")
+    public RelationInfoDetailVO getRelationRelatedTypeInstancesDetailInfo(@PathParam("discoverSpaceName")String discoverSpaceName, @PathParam("relationId")String relationId){
+        RelationInfoDetailVO resultInfo=DiscoverSpaceOperationUtil.getRelationDetailInfoById(discoverSpaceName,relationId);
         return resultInfo;
     }
 
