@@ -75,6 +75,7 @@ $(document).ready(function() {
             },
             legend: {
                 align: 'right',
+                floating: true,
                 verticalAlign: 'top',
                 y: 70,
                 layout: 'vertical'
