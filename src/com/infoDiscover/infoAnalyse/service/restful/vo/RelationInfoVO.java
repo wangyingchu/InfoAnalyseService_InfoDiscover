@@ -11,6 +11,7 @@ public class RelationInfoVO {
     private String id;
     private String discoverSpaceName;
     private String relationTypeName;
+    private String relationTypeAliasName;
     private RelationableValueVO fromRelationable;
     private RelationableValueVO toRelationable;
 
@@ -52,5 +53,13 @@ public class RelationInfoVO {
 
     public void setToRelationable(RelationableValueVO toRelationable) {
         this.toRelationable = toRelationable;
+    }
+
+    public String getRelationTypeAliasName() {
+        return relationTypeAliasName;
+    }
+
+    public void setRelationTypeAliasName(String relationTypeAliasName) {
+        this.relationTypeAliasName = relationTypeAliasName;
     }
 }

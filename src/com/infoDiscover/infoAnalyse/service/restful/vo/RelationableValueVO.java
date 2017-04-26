@@ -10,6 +10,7 @@ public class RelationableValueVO {
     private String id;
     private String discoverSpaceName;
     private String relationableTypeName;
+    private String relationableTypeAliasName;
     private String relationableTypeKind;
 
     public String getId() {
@@ -42,5 +43,13 @@ public class RelationableValueVO {
 
     public void setRelationableTypeKind(String relationableTypeKind) {
         this.relationableTypeKind = relationableTypeKind;
+    }
+
+    public String getRelationableTypeAliasName() {
+        return relationableTypeAliasName;
+    }
+
+    public void setRelationableTypeAliasName(String relationableTypeAliasName) {
+        this.relationableTypeAliasName = relationableTypeAliasName;
     }
 }

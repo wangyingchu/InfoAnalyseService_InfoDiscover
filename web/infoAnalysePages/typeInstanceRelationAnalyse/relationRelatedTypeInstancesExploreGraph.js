@@ -100,6 +100,10 @@ $(document).ready(function() {
             }
         );
 
+		var relationTitle=relationTypeName;
+		if(data.relationTypeAliasName){
+			relationTitle=relationTypeName+"("+data.relationTypeAliasName+")";
+		}
         edgesDataArray.push(
             {
                 from: fromTypeInstance.id, to:toTypeInstance.id,
@@ -107,7 +111,7 @@ $(document).ready(function() {
                 width: 8,
                 color: getCurrentGlobalColor(currentExploreLevel),
                 font: {size:14, color:getCurrentGlobalColor(currentExploreLevel), background:'white'},
-                label:relationTypeName+"["+relationId+"]",
+                label:relationTitle+"["+relationId+"]",
                 title: '\u5173\u7cfb: '+relationTypeName+" ("+relationId+")"+getPropertiesDetailInfo(relationProperties)                 
             });
         existRelationIdArray.push(relationId);

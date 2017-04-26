@@ -11,6 +11,7 @@ public class RelationInfoDetailVO {
     private String id;
     private String discoverSpaceName;
     private String relationTypeName;
+    private String relationTypeAliasName;
     private RelationableValueDetailVO fromRelationable;
     private RelationableValueDetailVO toRelationable;
     private List<PropertyVO> propertiesValueList;
@@ -61,5 +62,13 @@ public class RelationInfoDetailVO {
 
     public void setPropertiesValueList(List<PropertyVO> propertiesValueList) {
         this.propertiesValueList = propertiesValueList;
+    }
+
+    public String getRelationTypeAliasName() {
+        return relationTypeAliasName;
+    }
+
+    public void setRelationTypeAliasName(String relationTypeAliasName) {
+        this.relationTypeAliasName = relationTypeAliasName;
     }
 }

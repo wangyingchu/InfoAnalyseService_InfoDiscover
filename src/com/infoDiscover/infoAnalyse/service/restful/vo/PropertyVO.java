@@ -6,6 +6,7 @@ package com.infoDiscover.infoAnalyse.service.restful.vo;
 public class PropertyVO {
 
     private String propertyName;
+    private String propertyAliasName;
     private String propertyType;
     private String propertyValue;
 
@@ -31,5 +32,13 @@ public class PropertyVO {
 
     public void setPropertyValue(String propertyValue) {
         this.propertyValue = propertyValue;
+    }
+
+    public String getPropertyAliasName() {
+        return propertyAliasName;
+    }
+
+    public void setPropertyAliasName(String propertyAliasName) {
+        this.propertyAliasName = propertyAliasName;
     }
 }

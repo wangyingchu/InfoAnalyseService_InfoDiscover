@@ -12,6 +12,7 @@ public class RelationableValueDetailVO {
     private String id;
     private String discoverSpaceName;
     private String relationableTypeName;
+    private String relationableTypeAliasName;
     private String relationableTypeKind;
     private List<PropertyVO> propertiesValueList;
 
@@ -53,5 +54,13 @@ public class RelationableValueDetailVO {
 
     public void setPropertiesValueList(List<PropertyVO> propertiesValueList) {
         this.propertiesValueList = propertiesValueList;
+    }
+
+    public String getRelationableTypeAliasName() {
+        return relationableTypeAliasName;
+    }
+
+    public void setRelationableTypeAliasName(String relationableTypeAliasName) {
+        this.relationableTypeAliasName = relationableTypeAliasName;
     }
 }

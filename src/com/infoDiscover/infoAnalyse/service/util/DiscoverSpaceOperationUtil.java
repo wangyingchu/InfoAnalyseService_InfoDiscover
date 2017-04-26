@@ -4,6 +4,7 @@ import com.infoDiscover.infoAnalyse.service.restful.vo.*;
 import com.infoDiscover.infoDiscoverEngine.dataMart.*;
 import com.infoDiscover.infoDiscoverEngine.dataWarehouse.ExploreParameters;
 import com.infoDiscover.infoDiscoverEngine.dataWarehouse.InformationExplorer;
+import com.infoDiscover.infoDiscoverEngine.dataWarehouse.InformationFiltering.EqualFilteringItem;
 import com.infoDiscover.infoDiscoverEngine.dataWarehouse.InformationType;
 import com.infoDiscover.infoDiscoverEngine.dataWarehouse.SQLBuilder;
 import com.infoDiscover.infoDiscoverEngine.infoDiscoverBureau.InfoDiscoverSpace;
@@ -42,6 +43,7 @@ public class DiscoverSpaceOperationUtil {
                 sourceTypeInstanceVO.setDiscoverSpaceName(spaceName);
                 sourceTypeInstanceVO.setId(targetRelationable.getId());
                 sourceTypeInstanceVO.setRelationableTypeName(((Dimension)targetRelationable).getType());
+                sourceTypeInstanceVO.setRelationableTypeAliasName(getTypeKindAliasName(spaceName,DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION,((Dimension)targetRelationable).getType()));
                 sourceTypeInstanceVO.setRelationableTypeKind(DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION);
             }
             if(targetMeasurable instanceof Fact){
@@ -49,6 +51,7 @@ public class DiscoverSpaceOperationUtil {
                 sourceTypeInstanceVO.setDiscoverSpaceName(spaceName);
                 sourceTypeInstanceVO.setId(targetRelationable.getId());
                 sourceTypeInstanceVO.setRelationableTypeName(((Fact)targetRelationable).getType());
+                sourceTypeInstanceVO.setRelationableTypeAliasName(getTypeKindAliasName(spaceName,DiscoverSpaceOperationConstant.TYPEKIND_FACT,((Fact)targetRelationable).getType()));
                 sourceTypeInstanceVO.setRelationableTypeKind(DiscoverSpaceOperationConstant.TYPEKIND_FACT);
             }
             if(targetRelationable!=null){
@@ -60,6 +63,7 @@ public class DiscoverSpaceOperationUtil {
                     currentRelationValueVO.setId(currentRelation.getId());
                     currentRelationValueVO.setRelationTypeName(currentRelation.getType());
                     currentRelationValueVO.setDiscoverSpaceName(spaceName);
+                    currentRelationValueVO.setRelationTypeAliasName(getTypeKindAliasName(spaceName,DiscoverSpaceOperationConstant.TYPEKIND_RELATION,(currentRelation.getType())));
 
                     Relationable fromRelationable=currentRelation.getFromRelationable();
                     if(fromRelationable!=null){
@@ -69,11 +73,13 @@ public class DiscoverSpaceOperationUtil {
                         if(fromRelationable instanceof Dimension){
                             Dimension dimensionRelationable=(Dimension)fromRelationable;
                             fromRelationableValueVO.setRelationableTypeName(dimensionRelationable.getType());
+                            fromRelationableValueVO.setRelationableTypeAliasName(getTypeKindAliasName(spaceName,DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION,(dimensionRelationable.getType())));
                             fromRelationableValueVO.setRelationableTypeKind(DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION);
                         }
                         if(fromRelationable instanceof Fact){
                             Fact factRelationable=(Fact)fromRelationable;
                             fromRelationableValueVO.setRelationableTypeName(factRelationable.getType());
+                            fromRelationableValueVO.setRelationableTypeAliasName(getTypeKindAliasName(spaceName,DiscoverSpaceOperationConstant.TYPEKIND_FACT,(factRelationable.getType())));
                             fromRelationableValueVO.setRelationableTypeKind(DiscoverSpaceOperationConstant.TYPEKIND_FACT);
                         }
                         currentRelationValueVO.setFromRelationable(fromRelationableValueVO);
@@ -87,11 +93,13 @@ public class DiscoverSpaceOperationUtil {
                         if(toRelationable instanceof Dimension){
                             Dimension dimensionRelationable=(Dimension)toRelationable;
                             toRelationableValueVO.setRelationableTypeName(dimensionRelationable.getType());
+                            toRelationableValueVO.setRelationableTypeAliasName(getTypeKindAliasName(spaceName,DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION,(dimensionRelationable.getType())));
                             toRelationableValueVO.setRelationableTypeKind(DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION);
                         }
                         if(toRelationable instanceof Fact){
                             Fact factRelationable=(Fact)toRelationable;
                             toRelationableValueVO.setRelationableTypeName(factRelationable.getType());
+                            toRelationableValueVO.setRelationableTypeAliasName(getTypeKindAliasName(spaceName,DiscoverSpaceOperationConstant.TYPEKIND_FACT,(factRelationable.getType())));
                             toRelationableValueVO.setRelationableTypeKind(DiscoverSpaceOperationConstant.TYPEKIND_FACT);
                         }
                         currentRelationValueVO.setToRelationable(toRelationableValueVO);
@@ -126,6 +134,7 @@ public class DiscoverSpaceOperationUtil {
                 sourceTypeInstanceVO.setDiscoverSpaceName(spaceName);
                 sourceTypeInstanceVO.setId(targetRelationable.getId());
                 sourceTypeInstanceVO.setRelationableTypeName(((Dimension)targetRelationable).getType());
+                sourceTypeInstanceVO.setRelationableTypeAliasName(getTypeKindAliasName(spaceName,DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION,((Dimension)targetRelationable).getType()));
                 sourceTypeInstanceVO.setRelationableTypeKind(DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION);
             }
             if(targetMeasurable instanceof Fact){
@@ -133,12 +142,13 @@ public class DiscoverSpaceOperationUtil {
                 sourceTypeInstanceVO.setDiscoverSpaceName(spaceName);
                 sourceTypeInstanceVO.setId(targetRelationable.getId());
                 sourceTypeInstanceVO.setRelationableTypeName(((Fact)targetRelationable).getType());
+                sourceTypeInstanceVO.setRelationableTypeAliasName(getTypeKindAliasName(spaceName,DiscoverSpaceOperationConstant.TYPEKIND_FACT,((Fact)targetRelationable).getType()));
                 sourceTypeInstanceVO.setRelationableTypeKind(DiscoverSpaceOperationConstant.TYPEKIND_FACT);
             }
 
             List measurableProperties=targetMeasurable.getProperties();
             if(measurableProperties!=null){
-                List<PropertyVO> propertiesValueList=loadMeasurablePropertyVOList(measurableProperties);
+                List<PropertyVO> propertiesValueList=loadMeasurablePropertyVOList(spaceName,targetMeasurable,measurableProperties);
                 sourceTypeInstanceVO.setPropertiesValueList(propertiesValueList);
             }
 
@@ -150,11 +160,12 @@ public class DiscoverSpaceOperationUtil {
                     RelationInfoDetailVO currentRelationValueVO=new RelationInfoDetailVO();
                     currentRelationValueVO.setId(currentRelation.getId());
                     currentRelationValueVO.setRelationTypeName(currentRelation.getType());
+                    currentRelationValueVO.setRelationTypeAliasName(getTypeKindAliasName(spaceName,DiscoverSpaceOperationConstant.TYPEKIND_RELATION,currentRelation.getType()));
                     currentRelationValueVO.setDiscoverSpaceName(spaceName);
 
                     List relationProperties=currentRelation.getProperties();
                     if(relationProperties!=null){
-                        List<PropertyVO> propertiesValueList=loadMeasurablePropertyVOList(relationProperties);
+                        List<PropertyVO> propertiesValueList=loadMeasurablePropertyVOList(spaceName,currentRelation,relationProperties);
                         currentRelationValueVO.setPropertiesValueList(propertiesValueList);
                     }
 
@@ -166,17 +177,19 @@ public class DiscoverSpaceOperationUtil {
                         if(fromRelationable instanceof Dimension){
                             Dimension dimensionRelationable=(Dimension)fromRelationable;
                             fromRelationableValueVO.setRelationableTypeName(dimensionRelationable.getType());
+                            fromRelationableValueVO.setRelationableTypeAliasName(getTypeKindAliasName(spaceName,DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION,dimensionRelationable.getType()));
                             fromRelationableValueVO.setRelationableTypeKind(DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION);
                         }
                         if(fromRelationable instanceof Fact){
                             Fact factRelationable=(Fact)fromRelationable;
                             fromRelationableValueVO.setRelationableTypeName(factRelationable.getType());
+                            fromRelationableValueVO.setRelationableTypeAliasName(getTypeKindAliasName(spaceName,DiscoverSpaceOperationConstant.TYPEKIND_FACT,factRelationable.getType()));
                             fromRelationableValueVO.setRelationableTypeKind(DiscoverSpaceOperationConstant.TYPEKIND_FACT);
                         }
 
                         List fromProperties=fromRelationable.getProperties();
                         if(fromProperties!=null){
-                            List<PropertyVO> propertiesValueList=loadMeasurablePropertyVOList(fromProperties);
+                            List<PropertyVO> propertiesValueList=loadMeasurablePropertyVOList(spaceName,fromRelationable,fromProperties);
                             fromRelationableValueVO.setPropertiesValueList(propertiesValueList);
                         }
                         currentRelationValueVO.setFromRelationable(fromRelationableValueVO);
@@ -190,16 +203,18 @@ public class DiscoverSpaceOperationUtil {
                         if(toRelationable instanceof Dimension){
                             Dimension dimensionRelationable=(Dimension)toRelationable;
                             toRelationableValueVO.setRelationableTypeName(dimensionRelationable.getType());
+                            toRelationableValueVO.setRelationableTypeAliasName(getTypeKindAliasName(spaceName,DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION,dimensionRelationable.getType()));
                             toRelationableValueVO.setRelationableTypeKind(DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION);
                         }
                         if(toRelationable instanceof Fact){
                             Fact factRelationable=(Fact)toRelationable;
                             toRelationableValueVO.setRelationableTypeName(factRelationable.getType());
+                            toRelationableValueVO.setRelationableTypeAliasName(getTypeKindAliasName(spaceName,DiscoverSpaceOperationConstant.TYPEKIND_FACT,factRelationable.getType()));
                             toRelationableValueVO.setRelationableTypeKind(DiscoverSpaceOperationConstant.TYPEKIND_FACT);
                         }
                         List toProperties=toRelationable.getProperties();
                         if(toProperties!=null){
-                            List<PropertyVO> propertiesValueList=loadMeasurablePropertyVOList(toProperties);
+                            List<PropertyVO> propertiesValueList=loadMeasurablePropertyVOList(spaceName,toRelationable,toProperties);
                             toRelationableValueVO.setPropertiesValueList(propertiesValueList);
                         }
                         currentRelationValueVO.setToRelationable(toRelationableValueVO);
@@ -228,11 +243,12 @@ public class DiscoverSpaceOperationUtil {
             RelationInfoDetailVO targetRelationValueVO=new RelationInfoDetailVO();
             targetRelationValueVO.setId(targetRelation.getId());
             targetRelationValueVO.setRelationTypeName(targetRelation.getType());
+            targetRelationValueVO.setRelationTypeAliasName(getTypeKindAliasName(spaceName,DiscoverSpaceOperationConstant.TYPEKIND_RELATION,targetRelation.getType()));
             targetRelationValueVO.setDiscoverSpaceName(spaceName);
 
             List relationProperties=targetRelation.getProperties();
             if(relationProperties!=null){
-                List<PropertyVO> propertiesValueList=loadMeasurablePropertyVOList(relationProperties);
+                List<PropertyVO> propertiesValueList=loadMeasurablePropertyVOList(spaceName,targetRelation,relationProperties);
                 targetRelationValueVO.setPropertiesValueList(propertiesValueList);
             }
 
@@ -244,17 +260,19 @@ public class DiscoverSpaceOperationUtil {
                 if(fromRelationable instanceof Dimension){
                     Dimension dimensionRelationable=(Dimension)fromRelationable;
                     fromRelationableValueVO.setRelationableTypeName(dimensionRelationable.getType());
+                    fromRelationableValueVO.setRelationableTypeAliasName(getTypeKindAliasName(spaceName,DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION,dimensionRelationable.getType()));
                     fromRelationableValueVO.setRelationableTypeKind(DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION);
                 }
                 if(fromRelationable instanceof Fact){
                     Fact factRelationable=(Fact)fromRelationable;
                     fromRelationableValueVO.setRelationableTypeName(factRelationable.getType());
+                    fromRelationableValueVO.setRelationableTypeAliasName(getTypeKindAliasName(spaceName,DiscoverSpaceOperationConstant.TYPEKIND_FACT,factRelationable.getType()));
                     fromRelationableValueVO.setRelationableTypeKind(DiscoverSpaceOperationConstant.TYPEKIND_FACT);
                 }
 
                 List fromProperties=fromRelationable.getProperties();
                 if(fromProperties!=null){
-                    List<PropertyVO> propertiesValueList=loadMeasurablePropertyVOList(fromProperties);
+                    List<PropertyVO> propertiesValueList=loadMeasurablePropertyVOList(spaceName,fromRelationable,fromProperties);
                     fromRelationableValueVO.setPropertiesValueList(propertiesValueList);
                 }
                 targetRelationValueVO.setFromRelationable(fromRelationableValueVO);
@@ -268,16 +286,18 @@ public class DiscoverSpaceOperationUtil {
                 if (toRelationable instanceof Dimension) {
                     Dimension dimensionRelationable = (Dimension) toRelationable;
                     toRelationableValueVO.setRelationableTypeName(dimensionRelationable.getType());
+                    toRelationableValueVO.setRelationableTypeAliasName(getTypeKindAliasName(spaceName,DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION,dimensionRelationable.getType()));
                     toRelationableValueVO.setRelationableTypeKind(DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION);
                 }
                 if (toRelationable instanceof Fact) {
                     Fact factRelationable = (Fact) toRelationable;
                     toRelationableValueVO.setRelationableTypeName(factRelationable.getType());
+                    toRelationableValueVO.setRelationableTypeAliasName(getTypeKindAliasName(spaceName,DiscoverSpaceOperationConstant.TYPEKIND_FACT,factRelationable.getType()));
                     toRelationableValueVO.setRelationableTypeKind(DiscoverSpaceOperationConstant.TYPEKIND_FACT);
                 }
                 List toProperties = toRelationable.getProperties();
                 if (toProperties != null) {
-                    List<PropertyVO> propertiesValueList = loadMeasurablePropertyVOList(toProperties);
+                    List<PropertyVO> propertiesValueList = loadMeasurablePropertyVOList(spaceName,toRelationable,toProperties);
                     toRelationableValueVO.setPropertiesValueList(propertiesValueList);
                 }
                 targetRelationValueVO.setToRelationable(toRelationableValueVO);
@@ -624,10 +644,10 @@ public class DiscoverSpaceOperationUtil {
         return null;
     }
 
-    private static MeasurableVO getMeasurableVO(Measurable typeMeasurable){
+    private static MeasurableVO getMeasurableVO(String spaceName,Measurable typeMeasurable){
         MeasurableVO currentMeasurableVO=new MeasurableVO();
         List<Property> currentMeasurableProperties=typeMeasurable.getProperties();
-        currentMeasurableVO.setMeasurableProperties(loadMeasurablePropertyVOList(currentMeasurableProperties));
+        currentMeasurableVO.setMeasurableProperties(loadMeasurablePropertyVOList(spaceName,typeMeasurable,currentMeasurableProperties));
         return currentMeasurableVO;
     }
 
@@ -669,7 +689,7 @@ public class DiscoverSpaceOperationUtil {
                 List<MeasurableVO> resultMeasurableVOList=new ArrayList<>();
                 if(resultDimensionList!=null){
                     for(Measurable currentMeasurable:resultDimensionList){
-                        MeasurableVO measurableVO =getMeasurableVO(currentMeasurable);
+                        MeasurableVO measurableVO =getMeasurableVO(spaceName,currentMeasurable);
                         resultMeasurableVOList.add(measurableVO);
                     }
                 }
@@ -724,7 +744,7 @@ public class DiscoverSpaceOperationUtil {
                 List<MeasurableVO> resultMeasurableVOList=new ArrayList<>();
                 if(resultMeasurableList!=null){
                     for(Measurable currentMeasurable:resultMeasurableList){
-                        MeasurableVO measurableVO =getMeasurableVO(currentMeasurable);
+                        MeasurableVO measurableVO =getMeasurableVO(spaceName,currentMeasurable);
                         resultMeasurableVOList.add(measurableVO);
                     }
                 }
@@ -784,7 +804,7 @@ public class DiscoverSpaceOperationUtil {
                 List<MeasurableVO> resultMeasurableVOList=new ArrayList<>();
                 if(resultRelationList!=null){
                     for(Measurable currentMeasurable:resultRelationList){
-                        MeasurableVO measurableVO =getMeasurableVO(currentMeasurable);
+                        MeasurableVO measurableVO =getMeasurableVO(spaceName,currentMeasurable);
                         resultMeasurableVOList.add(measurableVO);
                     }
                 }
@@ -839,7 +859,7 @@ public class DiscoverSpaceOperationUtil {
                 List<MeasurableVO> resultMeasurableVOList=new ArrayList<>();
                 if(resultMeasurableList!=null){
                     for(Measurable currentMeasurable:resultMeasurableList){
-                        MeasurableVO measurableVO =getMeasurableVO(currentMeasurable);
+                        MeasurableVO measurableVO =getMeasurableVO(spaceName,currentMeasurable);
                         resultMeasurableVOList.add(measurableVO);
                     }
                 }
@@ -899,7 +919,7 @@ public class DiscoverSpaceOperationUtil {
                 List<MeasurableVO> resultMeasurableVOList=new ArrayList<>();
                 if(resultFactList!=null){
                     for(Measurable currentMeasurable:resultFactList){
-                        MeasurableVO measurableVO =getMeasurableVO(currentMeasurable);
+                        MeasurableVO measurableVO =getMeasurableVO(spaceName,currentMeasurable);
                         resultMeasurableVOList.add(measurableVO);
                     }
                 }
@@ -954,7 +974,7 @@ public class DiscoverSpaceOperationUtil {
                 List<MeasurableVO> resultMeasurableVOList=new ArrayList<>();
                 if(resultMeasurableList!=null){
                     for(Measurable currentMeasurable:resultMeasurableList){
-                        MeasurableVO measurableVO =getMeasurableVO(currentMeasurable);
+                        MeasurableVO measurableVO =getMeasurableVO(spaceName,currentMeasurable);
                         resultMeasurableVOList.add(measurableVO);
                     }
                 }
@@ -976,7 +996,7 @@ public class DiscoverSpaceOperationUtil {
         return null;
     }
 
-    private static List<PropertyVO> loadMeasurablePropertyVOList(List<Property> measurableProperties){
+    private static List<PropertyVO> loadMeasurablePropertyVOList(String spaceName,Measurable targetMeasurable,List<Property> measurableProperties){
         List<PropertyVO> currentMeasurableVOPropertiesList=new ArrayList<>();
         if(measurableProperties!=null){
             for(Property currentProperty:measurableProperties){
@@ -985,6 +1005,18 @@ public class DiscoverSpaceOperationUtil {
 
                 currentPropertyVO.setPropertyType(""+currentProperty.getPropertyType());
                 currentPropertyVO.setPropertyName(currentProperty.getPropertyName());
+                if(targetMeasurable instanceof Dimension){
+                    currentPropertyVO.setPropertyAliasName(getTypePropertyAliasName(
+                            spaceName,DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION,((Dimension) targetMeasurable).getType(),currentProperty.getPropertyName()));
+                }
+                if(targetMeasurable instanceof Fact){
+                    currentPropertyVO.setPropertyAliasName(getTypePropertyAliasName(
+                            spaceName,DiscoverSpaceOperationConstant.TYPEKIND_FACT,((Fact) targetMeasurable).getType(),currentProperty.getPropertyName()));
+                }
+                if(targetMeasurable instanceof Relation){
+                    currentPropertyVO.setPropertyAliasName(getTypePropertyAliasName(
+                            spaceName,DiscoverSpaceOperationConstant.TYPEKIND_RELATION,((Relation) targetMeasurable).getType(),currentProperty.getPropertyName()));
+                }
 
                 Object currentPropertyValue=currentProperty.getPropertyValue();
                 switch(currentProperty.getPropertyType()) {
@@ -1023,7 +1055,7 @@ public class DiscoverSpaceOperationUtil {
         measurableInstanceDetailInfoVO.setMeasurableId(measurableId);
 
         List<Property> currentMeasurableProperties=targetMeasurable.getProperties();
-        measurableInstanceDetailInfoVO.setMeasurableProperties(loadMeasurablePropertyVOList(currentMeasurableProperties));
+        measurableInstanceDetailInfoVO.setMeasurableProperties(loadMeasurablePropertyVOList(targetSpace.getSpaceName(),targetMeasurable,currentMeasurableProperties));
 
         if(targetMeasurable instanceof Fact){
             measurableInstanceDetailInfoVO.setMeasurableType(DiscoverSpaceOperationConstant.TYPEKIND_FACT);
@@ -1461,5 +1493,93 @@ public class DiscoverSpaceOperationUtil {
             }
         }
         return resultDataList;
+    }
+
+    // get type and property alias name logic
+    public static final String TYPEKIND_AliasNameFactType="TypeKind_AliasName";
+    public static final String TYPEPROPERTY_AliasNameFactType="TypeProperty_AliasName";
+    public static final String MetaConfig_PropertyName_DiscoverSpace="discoverSpace";
+    public static final String MetaConfig_PropertyName_TypeKind="typeKind";
+    public static final String MetaConfig_PropertyName_TypeName="typeName";
+    public static final String MetaConfig_PropertyName_TypeAliasName="typeAliasName";
+    public static final String MetaConfig_PropertyName_TypePropertyName="typePropertyName";
+    public static final String MetaConfig_PropertyName_TypePropertyAliasName="typePropertyAliasName";
+
+    private static HashMap<String,String> TYPEKIND_AliasNameMap=new HashMap<>();
+    private static HashMap<String,String> TypeProperty_AliasNameMap=new HashMap<>();
+
+    private static String getTypeKindAliasName(String spaceName,String typeKind,String typeName){
+        String typeKindRecordKey=spaceName+"_"+typeKind+"_"+typeName;
+        if(TYPEKIND_AliasNameMap.get(typeKindRecordKey)!=null){
+            return TYPEKIND_AliasNameMap.get(typeKindRecordKey);
+        }
+        String metaConfigSpaceName = InfoAnalyseServicePropertyHandler.getPropertyValue(InfoAnalyseServicePropertyHandler.META_CONFIG_DISCOVERSPACE);
+        InfoDiscoverSpace metaConfigSpace = null;
+        try {
+            metaConfigSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(metaConfigSpaceName);
+            ExploreParameters typeKindRecordEP = new ExploreParameters();
+            typeKindRecordEP.setType(TYPEKIND_AliasNameFactType);
+            typeKindRecordEP.setDefaultFilteringItem(new EqualFilteringItem(MetaConfig_PropertyName_DiscoverSpace, spaceName));
+            typeKindRecordEP.addFilteringItem(new EqualFilteringItem(MetaConfig_PropertyName_TypeKind, typeKind), ExploreParameters.FilteringLogic.AND);
+            typeKindRecordEP.addFilteringItem(new EqualFilteringItem(MetaConfig_PropertyName_TypeName, typeName), ExploreParameters.FilteringLogic.AND);
+            typeKindRecordEP.setResultNumber(1);
+            InformationExplorer ie = metaConfigSpace.getInformationExplorer();
+            List<Fact> typeAliasRecordFactsList = ie.discoverFacts(typeKindRecordEP);
+            if(typeAliasRecordFactsList!=null) {
+                if(typeAliasRecordFactsList.size()>0){
+                    Fact targetFact=typeAliasRecordFactsList.get(0);
+                    String typeKindAliasName=targetFact.getProperty(MetaConfig_PropertyName_TypeAliasName).getPropertyValue().toString();
+                    TYPEKIND_AliasNameMap.put(typeKindRecordKey,typeKindAliasName);
+                    return typeKindAliasName;
+                }
+            }
+        } catch (InfoDiscoveryEngineInfoExploreException e) {
+            e.printStackTrace();
+        } catch (InfoDiscoveryEngineRuntimeException e) {
+            e.printStackTrace();
+        }finally {
+            if(metaConfigSpace!=null){
+                metaConfigSpace.closeSpace();
+            }
+        }
+        return null;
+    }
+
+    private static String getTypePropertyAliasName(String spaceName,String typeKind,String typeName,String typePropertyName) {
+        String propertyRecordKey=spaceName+"_"+typeKind+"_"+typeName+"_"+typePropertyName;
+        if(TypeProperty_AliasNameMap.get(propertyRecordKey)!=null){
+            return TypeProperty_AliasNameMap.get(propertyRecordKey);
+        }
+        String metaConfigSpaceName = InfoAnalyseServicePropertyHandler.getPropertyValue(InfoAnalyseServicePropertyHandler.META_CONFIG_DISCOVERSPACE);
+        InfoDiscoverSpace metaConfigSpace = null;
+        try {
+            metaConfigSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(metaConfigSpaceName);
+            ExploreParameters typeKindRecordEP = new ExploreParameters();
+            typeKindRecordEP.setType(TYPEPROPERTY_AliasNameFactType);
+            typeKindRecordEP.setDefaultFilteringItem(new EqualFilteringItem(MetaConfig_PropertyName_DiscoverSpace, spaceName));
+            typeKindRecordEP.addFilteringItem(new EqualFilteringItem(MetaConfig_PropertyName_TypeKind, typeKind), ExploreParameters.FilteringLogic.AND);
+            typeKindRecordEP.addFilteringItem(new EqualFilteringItem(MetaConfig_PropertyName_TypeName, typeName), ExploreParameters.FilteringLogic.AND);
+            typeKindRecordEP.addFilteringItem(new EqualFilteringItem(MetaConfig_PropertyName_TypePropertyName, typePropertyName), ExploreParameters.FilteringLogic.AND);
+            typeKindRecordEP.setResultNumber(1);
+            InformationExplorer ie = metaConfigSpace.getInformationExplorer();
+            List<Fact> typePropertyAliasRecordFact = ie.discoverFacts(typeKindRecordEP);
+            if(typePropertyAliasRecordFact!=null) {
+                if(typePropertyAliasRecordFact.size()>0){
+                    Fact targetFact=typePropertyAliasRecordFact.get(0);
+                    String typeKindAliasName=targetFact.getProperty(MetaConfig_PropertyName_TypePropertyAliasName).getPropertyValue().toString();
+                    TypeProperty_AliasNameMap.put(propertyRecordKey,typeKindAliasName);
+                    return typeKindAliasName;
+                }
+            }
+        } catch (InfoDiscoveryEngineInfoExploreException e) {
+            e.printStackTrace();
+        } catch (InfoDiscoveryEngineRuntimeException e) {
+            e.printStackTrace();
+        }finally {
+            if(metaConfigSpace!=null){
+                metaConfigSpace.closeSpace();
+            }
+        }
+        return null;
     }
 }
