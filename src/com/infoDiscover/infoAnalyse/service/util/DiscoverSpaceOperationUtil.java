@@ -1531,7 +1531,11 @@ public class DiscoverSpaceOperationUtil {
                     String typeKindAliasName=targetFact.getProperty(MetaConfig_PropertyName_TypeAliasName).getPropertyValue().toString();
                     TYPEKIND_AliasNameMap.put(typeKindRecordKey,typeKindAliasName);
                     return typeKindAliasName;
+                }else{
+                    TYPEKIND_AliasNameMap.put(typeKindRecordKey,"");
                 }
+            }else{
+                TYPEKIND_AliasNameMap.put(typeKindRecordKey,"");
             }
         } catch (InfoDiscoveryEngineInfoExploreException e) {
             e.printStackTrace();
@@ -1569,7 +1573,11 @@ public class DiscoverSpaceOperationUtil {
                     String typeKindAliasName=targetFact.getProperty(MetaConfig_PropertyName_TypePropertyAliasName).getPropertyValue().toString();
                     TypeProperty_AliasNameMap.put(propertyRecordKey,typeKindAliasName);
                     return typeKindAliasName;
+                }else{
+                    TypeProperty_AliasNameMap.put(propertyRecordKey,"");
                 }
+            }else{
+                TypeProperty_AliasNameMap.put(propertyRecordKey,"");
             }
         } catch (InfoDiscoveryEngineInfoExploreException e) {
             e.printStackTrace();

@@ -74,10 +74,19 @@ $(document).ready(function() {
         var fromTypeInstance=data.fromRelationable;
         var toTypeInstance=data.toRelationable;
 
+		var fromTypeInstanceLabelName=fromTypeInstance.relationableTypeName;
+		if(fromTypeInstance.relationableTypeAliasName){
+		    fromTypeInstanceLabelName=fromTypeInstance.relationableTypeAliasName;
+		}
+		var toTypeInstanceLabelName=toTypeInstance.relationableTypeName;
+		if(toTypeInstance.relationableTypeAliasName){
+		    toTypeInstanceLabelName=toTypeInstance.relationableTypeAliasName;
+		}
+
         nodesDataArray.push(
             {
                 id:fromTypeInstance.id,
-                label:fromTypeInstance.relationableTypeName+"["+fromTypeInstance.id+"]",
+                label: fromTypeInstanceLabelName+"["+fromTypeInstance.id+"]",
                 group: fromTypeInstance.relationableTypeKind, 
                 size: 22,               
                 color: getCurrentGlobalColor(currentExploreLevel),
@@ -90,7 +99,7 @@ $(document).ready(function() {
         nodesDataArray.push(
             {
                 id:toTypeInstance.id,
-                label:toTypeInstance.relationableTypeName+"["+toTypeInstance.id+"]",
+                label: toTypeInstanceLabelName+"["+toTypeInstance.id+"]",
                 group: toTypeInstance.relationableTypeKind,  
                 size: 22,              
                 color: getCurrentGlobalColor(currentExploreLevel),
@@ -100,9 +109,9 @@ $(document).ready(function() {
             }
         );
 
-		var relationTitle=relationTypeName;
+		var relationLabel=relationTypeName;
 		if(data.relationTypeAliasName){
-			relationTitle=relationTypeName+"("+data.relationTypeAliasName+")";
+			relationLabel=data.relationTypeAliasName;
 		}
         edgesDataArray.push(
             {
@@ -111,8 +120,8 @@ $(document).ready(function() {
                 width: 8,
                 color: getCurrentGlobalColor(currentExploreLevel),
                 font: {size:14, color:getCurrentGlobalColor(currentExploreLevel), background:'white'},
-                label:relationTitle+"["+relationId+"]",
-                title: '\u5173\u7cfb: '+relationTypeName+" ("+relationId+")"+getPropertiesDetailInfo(relationProperties)                 
+                label:relationLabel+"["+relationId+"]",
+                title: '\u5173\u7cfb: '+relationTypeName+" ["+relationId+"]"+getPropertiesDetailInfo(relationProperties)                 
             });
         existRelationIdArray.push(relationId);
 
@@ -151,6 +160,15 @@ function appendNewSelectedRelations(relationsInfo,selectedSourceNodeId){
         var fromRelationable=value.fromRelationable;
         var toRelationable=value.toRelationable;
 
+		var fromTypeInstanceLabelName=fromRelationable.relationableTypeName;
+		if(fromRelationable.relationableTypeAliasName){
+		    fromTypeInstanceLabelName=fromRelationable.relationableTypeAliasName;
+		}
+		var toTypeInstanceLabelName=toRelationable.relationableTypeName;
+		if(toRelationable.relationableTypeAliasName){
+		    toTypeInstanceLabelName=toRelationable.relationableTypeAliasName;
+		}
+
         if(fromRelationable.id!=toRelationable.id){
             //if fromRelationable.id == toRelationable.id means they are same node(the selected SourceNode)
             if(selectedSourceNodeId!=fromRelationable.id){
@@ -159,7 +177,7 @@ function appendNewSelectedRelations(relationsInfo,selectedSourceNodeId){
                 if(!isExistNodeFlag){
                     nodes.add({
                         id: fromRelationable.id,
-                        label: fromRelationable.relationableTypeName+" ["+fromRelationable.id+"]",
+                        label: fromTypeInstanceLabelName+" ["+fromRelationable.id+"]",
                         group: fromRelationable.relationableTypeKind,
                         shape: dataInstanceTypeShapeMap[fromRelationable.relationableTypeKind],
                         title: getDetailTitle(fromRelationable),
@@ -173,7 +191,7 @@ function appendNewSelectedRelations(relationsInfo,selectedSourceNodeId){
                 if(!isExistNodeFlag){
                     nodes.add({
                         id: toRelationable.id,
-                        label: toRelationable.relationableTypeName+" ["+toRelationable.id+"]",
+                        label: toTypeInstanceLabelName+" ["+toRelationable.id+"]",
                         group: toRelationable.relationableTypeKind,
                         shape: dataInstanceTypeShapeMap[toRelationable.relationableTypeKind],
                         title: getDetailTitle(toRelationable),				
@@ -184,11 +202,15 @@ function appendNewSelectedRelations(relationsInfo,selectedSourceNodeId){
         }
 
         if(!checkEdgeExistence(relationId)){
+			var relationTitle=relationTypeName;
+			if(value.relationTypeAliasName){
+				relationTitle=relationTypeName+"("+value.relationTypeAliasName+")";
+			}
             edges.add( {
                 from: fromRelationable.id, to:toRelationable.id,
                 arrows:'to',
                 label:relationId,
-                title: '\u5173\u7cfb: '+relationTypeName+" ["+relationId+"]"+getPropertiesDetailInfo(value.propertiesValueList)	
+                title: '\u5173\u7cfb: '+relationTitle+" ["+relationId+"]"+getPropertiesDetailInfo(value.propertiesValueList)	
             });
             existRelationIdArray.push(relationId);
         }
@@ -231,7 +253,7 @@ function checkEdgeExistence(edgeId){
 }
 
 function getDetailTitle(dataTypeInstance){
-	var detailTitle="<b>"+dataInstanceTypeDisplayNameMap[dataTypeInstance.relationableTypeKind]+': '+dataTypeInstance.relationableTypeName+" ("+dataTypeInstance.id+")"+"</b>";
+	var detailTitle="<b>"+dataInstanceTypeDisplayNameMap[dataTypeInstance.relationableTypeKind]+': '+dataTypeInstance.relationableTypeName+" ["+dataTypeInstance.id+"]"+"</b>";
 	var propertiesList=dataTypeInstance.propertiesValueList;
 	if(propertiesList){
 		$.each(propertiesList,function(index,value){
@@ -239,7 +261,11 @@ function getDetailTitle(dataTypeInstance){
 			if(value.propertyType=="DATE"){
 				propertyValue=new Date(Number(value.propertyValue)).toLocaleString();
 			}
-			detailTitle=detailTitle+"<br/>"+"<span style='font-size: 0.8em;'>"+"<span style='color:#666666;'>["+value.propertyType+"]</span> <b>"+value.propertyName+"</b> : "+propertyValue+"</span>"
+			var propertyTitle=value.propertyName;
+			if(value.propertyAliasName){
+				propertyTitle=value.propertyName+"("+value.propertyAliasName+")";
+			}
+			detailTitle=detailTitle+"<br/>"+"<span style='font-size: 0.8em;'>"+"<span style='color:#666666;'>["+value.propertyType+"]</span> <b>"+propertyTitle+"</b> : "+propertyValue+"</span>"
 		});
 	}
 	return detailTitle;
@@ -253,7 +279,11 @@ function getPropertiesDetailInfo(propertiesList){
 			if(value.propertyType=="DATE"){
 				propertyValue=new Date(Number(value.propertyValue)).toLocaleString();
 			}
-			detailTitle=detailTitle+"<br/>"+"<span style='font-size: 0.8em;'>"+"<span style='color:#666666;'>["+value.propertyType+"]</span> <b>"+value.propertyName+"</b> : "+propertyValue+"</span>"
+			var propertyTitle=value.propertyName;
+			if(value.propertyAliasName){
+				propertyTitle=value.propertyName+"("+value.propertyAliasName+")";
+			}
+			detailTitle=detailTitle+"<br/>"+"<span style='font-size: 0.8em;'>"+"<span style='color:#666666;'>["+value.propertyType+"]</span> <b>"+propertyTitle+"</b> : "+propertyValue+"</span>"
 		});
 	}
 	return detailTitle;
