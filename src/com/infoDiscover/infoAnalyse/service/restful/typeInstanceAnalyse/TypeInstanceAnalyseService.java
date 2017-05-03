@@ -1,15 +1,13 @@
 package com.infoDiscover.infoAnalyse.service.restful.typeInstanceAnalyse;
 
-import com.infoDiscover.infoAnalyse.service.restful.vo.MeasurableInstanceDetailInfoVO;
-import com.infoDiscover.infoAnalyse.service.restful.vo.RelationInfoDetailVO;
-import com.infoDiscover.infoAnalyse.service.restful.vo.TypeInstanceRelationsCycleVO;
-import com.infoDiscover.infoAnalyse.service.restful.vo.TypeInstanceRelationsDetailVO;
+import com.infoDiscover.infoAnalyse.service.restful.vo.*;
 import com.infoDiscover.infoAnalyse.service.util.DiscoverSpaceOperationUtil;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -39,8 +37,8 @@ public class TypeInstanceAnalyseService {
     @GET
     @Path("/relationRelatedTypeInstancesExplore/{discoverSpaceName}/{relationId}")
     @Produces("application/json")
-    public RelationInfoDetailVO getRelationRelatedTypeInstancesDetailInfo(@PathParam("discoverSpaceName")String discoverSpaceName, @PathParam("relationId")String relationId){
-        RelationInfoDetailVO resultInfo=DiscoverSpaceOperationUtil.getRelationDetailInfoById(discoverSpaceName,relationId);
+    public RelationDetailInfoVO getRelationRelatedTypeInstancesDetailInfo(@PathParam("discoverSpaceName")String discoverSpaceName, @PathParam("relationId")String relationId){
+        RelationDetailInfoVO resultInfo=DiscoverSpaceOperationUtil.getRelationDetailInfoById(discoverSpaceName,relationId);
         return resultInfo;
     }
 
@@ -57,6 +55,15 @@ public class TypeInstanceAnalyseService {
     @Produces("application/json")
     public List<MeasurableInstanceDetailInfoVO> getTypeInstancesDetailInfo(@PathParam("discoverSpaceName")String discoverSpaceName, @PathParam("measurableInstanceIds")String measurableInstanceIds){
         List<MeasurableInstanceDetailInfoVO> resultInfo=DiscoverSpaceOperationUtil.getMeasurableInstancesDetailInfo(discoverSpaceName,measurableInstanceIds);
+        return resultInfo;
+    }
+
+    @GET
+    @Path("/similarTypeInstancesExplore/{discoverSpaceName}/{relationableId}/{dimensionsIdList}/{filteringPattern}")
+    @Produces("application/json")
+    public TypeInstanceSimilarDataDetailVO getSimilarRelationableInfoConnectedSameDimensions(@PathParam("discoverSpaceName")String discoverSpaceName, @PathParam("relationableId")String relationableId,
+                                                                                             @PathParam("dimensionsIdList")String dimensionsIdList, @PathParam("filteringPattern")String filteringPattern){
+        TypeInstanceSimilarDataDetailVO resultInfo=DiscoverSpaceOperationUtil.getSimilarRelationableConnectedSameDimensions(discoverSpaceName,relationableId,dimensionsIdList,filteringPattern);
         return resultInfo;
     }
 }

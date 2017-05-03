@@ -6,8 +6,8 @@ import java.util.List;
 /**
  * Created by wangychu on 4/11/17.
  */
-@XmlRootElement(name = "RelationInfoDetailVO")
-public class RelationInfoDetailVO {
+@XmlRootElement(name = "RelationDetailInfoVO")
+public class RelationDetailInfoVO {
     private String id;
     private String discoverSpaceName;
     private String relationTypeName;

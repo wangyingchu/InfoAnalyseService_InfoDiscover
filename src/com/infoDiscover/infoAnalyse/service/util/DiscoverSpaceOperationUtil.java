@@ -117,7 +117,7 @@ public class DiscoverSpaceOperationUtil {
 
     public static TypeInstanceRelationsDetailVO getRelationableRelationsDetailInfoById(String spaceName, String relationableId){
         TypeInstanceRelationsDetailVO typeInstanceRelationsDetailVO=new TypeInstanceRelationsDetailVO();
-        List<RelationInfoDetailVO> resultRelationValueList=new ArrayList<RelationInfoDetailVO>();
+        List<RelationDetailInfoVO> resultRelationValueList=new ArrayList<RelationDetailInfoVO>();
         typeInstanceRelationsDetailVO.setRelationsInfo(resultRelationValueList);
         RelationableValueDetailVO sourceTypeInstanceVO=new RelationableValueDetailVO();
         typeInstanceRelationsDetailVO.setSourceTypeInstance(sourceTypeInstanceVO);
@@ -157,7 +157,7 @@ public class DiscoverSpaceOperationUtil {
             }
             if(relationsList!=null){
                 for(Relation currentRelation:relationsList){
-                    RelationInfoDetailVO currentRelationValueVO=new RelationInfoDetailVO();
+                    RelationDetailInfoVO currentRelationValueVO=new RelationDetailInfoVO();
                     currentRelationValueVO.setId(currentRelation.getId());
                     currentRelationValueVO.setRelationTypeName(currentRelation.getType());
                     currentRelationValueVO.setRelationTypeAliasName(getTypeKindAliasName(spaceName,DiscoverSpaceOperationConstant.TYPEKIND_RELATION,currentRelation.getType()));
@@ -231,83 +231,88 @@ public class DiscoverSpaceOperationUtil {
         return typeInstanceRelationsDetailVO;
     }
 
-    public static RelationInfoDetailVO getRelationDetailInfoById(String spaceName, String relationId){
+    public static RelationDetailInfoVO getRelationDetailInfoById(String spaceName, String relationId){
         InfoDiscoverSpace targetSpace=null;
         try {
             targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
-            Relation targetRelation=targetSpace.getRelationById(relationId);
-            if(targetRelation==null){
-                return null;
-            }
-
-            RelationInfoDetailVO targetRelationValueVO=new RelationInfoDetailVO();
-            targetRelationValueVO.setId(targetRelation.getId());
-            targetRelationValueVO.setRelationTypeName(targetRelation.getType());
-            targetRelationValueVO.setRelationTypeAliasName(getTypeKindAliasName(spaceName,DiscoverSpaceOperationConstant.TYPEKIND_RELATION,targetRelation.getType()));
-            targetRelationValueVO.setDiscoverSpaceName(spaceName);
-
-            List relationProperties=targetRelation.getProperties();
-            if(relationProperties!=null){
-                List<PropertyVO> propertiesValueList=loadMeasurablePropertyVOList(spaceName,targetRelation,relationProperties);
-                targetRelationValueVO.setPropertiesValueList(propertiesValueList);
-            }
-
-            Relationable fromRelationable=targetRelation.getFromRelationable();
-            if(fromRelationable!=null){
-                RelationableValueDetailVO fromRelationableValueVO=new RelationableValueDetailVO();
-                fromRelationableValueVO.setDiscoverSpaceName(spaceName);
-                fromRelationableValueVO.setId(fromRelationable.getId());
-                if(fromRelationable instanceof Dimension){
-                    Dimension dimensionRelationable=(Dimension)fromRelationable;
-                    fromRelationableValueVO.setRelationableTypeName(dimensionRelationable.getType());
-                    fromRelationableValueVO.setRelationableTypeAliasName(getTypeKindAliasName(spaceName,DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION,dimensionRelationable.getType()));
-                    fromRelationableValueVO.setRelationableTypeKind(DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION);
-                }
-                if(fromRelationable instanceof Fact){
-                    Fact factRelationable=(Fact)fromRelationable;
-                    fromRelationableValueVO.setRelationableTypeName(factRelationable.getType());
-                    fromRelationableValueVO.setRelationableTypeAliasName(getTypeKindAliasName(spaceName,DiscoverSpaceOperationConstant.TYPEKIND_FACT,factRelationable.getType()));
-                    fromRelationableValueVO.setRelationableTypeKind(DiscoverSpaceOperationConstant.TYPEKIND_FACT);
-                }
-
-                List fromProperties=fromRelationable.getProperties();
-                if(fromProperties!=null){
-                    List<PropertyVO> propertiesValueList=loadMeasurablePropertyVOList(spaceName,fromRelationable,fromProperties);
-                    fromRelationableValueVO.setPropertiesValueList(propertiesValueList);
-                }
-                targetRelationValueVO.setFromRelationable(fromRelationableValueVO);
-            }
-
-            Relationable toRelationable=targetRelation.getToRelationable();
-            if(toRelationable!=null) {
-                RelationableValueDetailVO toRelationableValueVO = new RelationableValueDetailVO();
-                toRelationableValueVO.setDiscoverSpaceName(spaceName);
-                toRelationableValueVO.setId(toRelationable.getId());
-                if (toRelationable instanceof Dimension) {
-                    Dimension dimensionRelationable = (Dimension) toRelationable;
-                    toRelationableValueVO.setRelationableTypeName(dimensionRelationable.getType());
-                    toRelationableValueVO.setRelationableTypeAliasName(getTypeKindAliasName(spaceName,DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION,dimensionRelationable.getType()));
-                    toRelationableValueVO.setRelationableTypeKind(DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION);
-                }
-                if (toRelationable instanceof Fact) {
-                    Fact factRelationable = (Fact) toRelationable;
-                    toRelationableValueVO.setRelationableTypeName(factRelationable.getType());
-                    toRelationableValueVO.setRelationableTypeAliasName(getTypeKindAliasName(spaceName,DiscoverSpaceOperationConstant.TYPEKIND_FACT,factRelationable.getType()));
-                    toRelationableValueVO.setRelationableTypeKind(DiscoverSpaceOperationConstant.TYPEKIND_FACT);
-                }
-                List toProperties = toRelationable.getProperties();
-                if (toProperties != null) {
-                    List<PropertyVO> propertiesValueList = loadMeasurablePropertyVOList(spaceName,toRelationable,toProperties);
-                    toRelationableValueVO.setPropertiesValueList(propertiesValueList);
-                }
-                targetRelationValueVO.setToRelationable(toRelationableValueVO);
-            }
+            RelationDetailInfoVO targetRelationValueVO=getRelationDetailInfoById(targetSpace,relationId);
             return targetRelationValueVO;
         } finally {
             if(targetSpace!=null){
                 targetSpace.closeSpace();
             }
         }
+    }
+
+    private static RelationDetailInfoVO getRelationDetailInfoById(InfoDiscoverSpace targetSpace, String relationId){
+        Relation targetRelation=targetSpace.getRelationById(relationId);
+        if(targetRelation==null){
+            return null;
+        }
+
+        RelationDetailInfoVO targetRelationValueVO=new RelationDetailInfoVO();
+        targetRelationValueVO.setId(targetRelation.getId());
+        targetRelationValueVO.setRelationTypeName(targetRelation.getType());
+        targetRelationValueVO.setRelationTypeAliasName(getTypeKindAliasName(targetSpace.getSpaceName(),DiscoverSpaceOperationConstant.TYPEKIND_RELATION,targetRelation.getType()));
+        targetRelationValueVO.setDiscoverSpaceName(targetSpace.getSpaceName());
+
+        List relationProperties=targetRelation.getProperties();
+        if(relationProperties!=null){
+            List<PropertyVO> propertiesValueList=loadMeasurablePropertyVOList(targetSpace.getSpaceName(),targetRelation,relationProperties);
+            targetRelationValueVO.setPropertiesValueList(propertiesValueList);
+        }
+
+        Relationable fromRelationable=targetRelation.getFromRelationable();
+        if(fromRelationable!=null){
+            RelationableValueDetailVO fromRelationableValueVO=new RelationableValueDetailVO();
+            fromRelationableValueVO.setDiscoverSpaceName(targetSpace.getSpaceName());
+            fromRelationableValueVO.setId(fromRelationable.getId());
+            if(fromRelationable instanceof Dimension){
+                Dimension dimensionRelationable=(Dimension)fromRelationable;
+                fromRelationableValueVO.setRelationableTypeName(dimensionRelationable.getType());
+                fromRelationableValueVO.setRelationableTypeAliasName(getTypeKindAliasName(targetSpace.getSpaceName(),DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION,dimensionRelationable.getType()));
+                fromRelationableValueVO.setRelationableTypeKind(DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION);
+            }
+            if(fromRelationable instanceof Fact){
+                Fact factRelationable=(Fact)fromRelationable;
+                fromRelationableValueVO.setRelationableTypeName(factRelationable.getType());
+                fromRelationableValueVO.setRelationableTypeAliasName(getTypeKindAliasName(targetSpace.getSpaceName(),DiscoverSpaceOperationConstant.TYPEKIND_FACT,factRelationable.getType()));
+                fromRelationableValueVO.setRelationableTypeKind(DiscoverSpaceOperationConstant.TYPEKIND_FACT);
+            }
+
+            List fromProperties=fromRelationable.getProperties();
+            if(fromProperties!=null){
+                List<PropertyVO> propertiesValueList=loadMeasurablePropertyVOList(targetSpace.getSpaceName(),fromRelationable,fromProperties);
+                fromRelationableValueVO.setPropertiesValueList(propertiesValueList);
+            }
+            targetRelationValueVO.setFromRelationable(fromRelationableValueVO);
+        }
+
+        Relationable toRelationable=targetRelation.getToRelationable();
+        if(toRelationable!=null) {
+            RelationableValueDetailVO toRelationableValueVO = new RelationableValueDetailVO();
+            toRelationableValueVO.setDiscoverSpaceName(targetSpace.getSpaceName());
+            toRelationableValueVO.setId(toRelationable.getId());
+            if (toRelationable instanceof Dimension) {
+                Dimension dimensionRelationable = (Dimension) toRelationable;
+                toRelationableValueVO.setRelationableTypeName(dimensionRelationable.getType());
+                toRelationableValueVO.setRelationableTypeAliasName(getTypeKindAliasName(targetSpace.getSpaceName(),DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION,dimensionRelationable.getType()));
+                toRelationableValueVO.setRelationableTypeKind(DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION);
+            }
+            if (toRelationable instanceof Fact) {
+                Fact factRelationable = (Fact) toRelationable;
+                toRelationableValueVO.setRelationableTypeName(factRelationable.getType());
+                toRelationableValueVO.setRelationableTypeAliasName(getTypeKindAliasName(targetSpace.getSpaceName(),DiscoverSpaceOperationConstant.TYPEKIND_FACT,factRelationable.getType()));
+                toRelationableValueVO.setRelationableTypeKind(DiscoverSpaceOperationConstant.TYPEKIND_FACT);
+            }
+            List toProperties = toRelationable.getProperties();
+            if (toProperties != null) {
+                List<PropertyVO> propertiesValueList = loadMeasurablePropertyVOList(targetSpace.getSpaceName(),toRelationable,toProperties);
+                toRelationableValueVO.setPropertiesValueList(propertiesValueList);
+            }
+            targetRelationValueVO.setToRelationable(toRelationableValueVO);
+        }
+        return targetRelationValueVO;
     }
 
     public static List<FactTypeInfoVO> getDiscoverSpaceFactTypesDataCountInfo(String spaceName){
@@ -1061,7 +1066,7 @@ public class DiscoverSpaceOperationUtil {
             measurableInstanceDetailInfoVO.setMeasurableType(DiscoverSpaceOperationConstant.TYPEKIND_FACT);
             String measurableType=((Fact)targetMeasurable).getType();
             measurableInstanceDetailInfoVO.setMeasurableName(measurableType);
-
+            measurableInstanceDetailInfoVO.setMeasurableAliasName(getTypeKindAliasName(targetSpace.getSpaceName(),DiscoverSpaceOperationConstant.TYPEKIND_FACT,measurableType));
             FactType measurableFactType=targetSpace.getFactType(measurableType);
             List<TypeProperty> typePropertyList=measurableFactType.getTypeProperties();
             measurableInstanceDetailInfoVO.setTypePropertyList(loadTypePropertyVOList(typePropertyList));
@@ -1071,7 +1076,7 @@ public class DiscoverSpaceOperationUtil {
             measurableInstanceDetailInfoVO.setMeasurableType(DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION);
             String measurableType=((Dimension)targetMeasurable).getType();
             measurableInstanceDetailInfoVO.setMeasurableName(measurableType);
-
+            measurableInstanceDetailInfoVO.setMeasurableAliasName(getTypeKindAliasName(targetSpace.getSpaceName(),DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION,measurableType));
             DimensionType measurableDimensionType=targetSpace.getDimensionType(measurableType);
             List<TypeProperty> typePropertyList=measurableDimensionType.getTypeProperties();
             measurableInstanceDetailInfoVO.setTypePropertyList(loadTypePropertyVOList(typePropertyList));
@@ -1081,7 +1086,7 @@ public class DiscoverSpaceOperationUtil {
             measurableInstanceDetailInfoVO.setMeasurableType(DiscoverSpaceOperationConstant.TYPEKIND_RELATION);
             String measurableType=((Relation)targetMeasurable).getType();
             measurableInstanceDetailInfoVO.setMeasurableName(measurableType);
-
+            measurableInstanceDetailInfoVO.setMeasurableAliasName(getTypeKindAliasName(targetSpace.getSpaceName(),DiscoverSpaceOperationConstant.TYPEKIND_RELATION,measurableType));
             RelationType measurableRelationType=targetSpace.getRelationType(measurableType);
             List<TypeProperty> typePropertyList=measurableRelationType.getTypeProperties();
             measurableInstanceDetailInfoVO.setTypePropertyList(loadTypePropertyVOList(typePropertyList));
@@ -1702,4 +1707,121 @@ public class DiscoverSpaceOperationUtil {
             }
         }
     }
+
+    public static TypeInstanceSimilarDataDetailVO getSimilarRelationableConnectedSameDimensions(String spaceName,String sourceRelationableId,String relatedDimensionsListStr,String filteringPattern){
+        String[] dimensionsIdArray=relatedDimensionsListStr.split(",");
+        List<String> relatedDimensionsList=new ArrayList<>();
+        for(String currentDimensionId:dimensionsIdArray){
+            relatedDimensionsList.add(currentDimensionId);
+        }
+        if(relatedDimensionsList==null||relatedDimensionsList.size()==0){
+            return null;
+        }
+        InfoDiscoverSpace targetSpace=null;
+        try {
+            targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
+            MeasurableInstanceDetailInfoVO sourceRelationableVO=getMeasurableInstanceDetailInfoVO(targetSpace,sourceRelationableId);
+            if(sourceRelationableVO==null){
+                return null;
+            }
+
+            TypeInstanceSimilarDataDetailVO typeInstanceSimilarDataDetailVO=new TypeInstanceSimilarDataDetailVO();
+
+            List<Relation> sourceRelationableRelations=null;
+            List<RelationDetailInfoVO> sourceRelationableAndDimensionsRelationsInfoList=new ArrayList<>();
+            Measurable sourceMeasurable=targetSpace.getMeasurableById(sourceRelationableId);
+
+            if(sourceMeasurable instanceof Fact){
+                Fact currentFact=(Fact)sourceMeasurable;
+                sourceRelationableRelations=currentFact.getAllRelations();
+            }
+            if(sourceMeasurable instanceof Dimension){
+                Dimension currentDimension=(Dimension)sourceMeasurable;
+                sourceRelationableRelations=currentDimension.getAllRelations();
+            }
+
+            for(Relation currentRelation:sourceRelationableRelations){
+                Relationable fromRelationable=currentRelation.getFromRelationable();
+                Relationable toRelationable=currentRelation.getToRelationable();
+                String otherSideRelationableId=null;
+                if(fromRelationable.getId().equals(sourceRelationableId)){
+                    otherSideRelationableId=toRelationable.getId();
+                    if(relatedDimensionsList.contains(otherSideRelationableId)){
+                        RelationDetailInfoVO matchedRelationDetailInfoVO =getRelationDetailInfoById(targetSpace,currentRelation.getId());
+                        sourceRelationableAndDimensionsRelationsInfoList.add(matchedRelationDetailInfoVO);
+                    }
+                }else{
+                    otherSideRelationableId=fromRelationable.getId();
+                    if(relatedDimensionsList.contains(otherSideRelationableId)){
+                        RelationDetailInfoVO matchedRelationDetailInfoVO =getRelationDetailInfoById(targetSpace,currentRelation.getId());
+                        sourceRelationableAndDimensionsRelationsInfoList.add(matchedRelationDetailInfoVO);
+                    }
+                }
+            }
+            MeasurableInstanceAndRelationsDetailInfoVO sourceMeasurableInstanceAndRelationsDetailInfoVO=new MeasurableInstanceAndRelationsDetailInfoVO();
+            sourceMeasurableInstanceAndRelationsDetailInfoVO.setMeasurableInstanceDetailInfo(sourceRelationableVO);
+            sourceMeasurableInstanceAndRelationsDetailInfoVO.setRelationsDetailInfoList(sourceRelationableAndDimensionsRelationsInfoList);
+            typeInstanceSimilarDataDetailVO.setSourceTypeInstanceDetailInfo(sourceMeasurableInstanceAndRelationsDetailInfoVO);
+
+            List<MeasurableInstanceAndRelationsDetailInfoVO> similarMeasurableInstanceAndRelationsDetailInfoList=new ArrayList<>();
+            typeInstanceSimilarDataDetailVO.setSimilarTypeInstancesDetailInfoList(similarMeasurableInstanceAndRelationsDetailInfoList);
+
+            InformationExplorer ie=targetSpace.getInformationExplorer();
+            List<Relationable> similarRelationableList=null;
+            if("ALL".equals(filteringPattern)){
+                similarRelationableList=ie.discoverSimilarRelationablesRelatedToSameDimensions(sourceRelationableId,relatedDimensionsList,InformationExplorer.FilteringPattern.AND);
+            }
+            if("ANY".equals(filteringPattern)){
+                similarRelationableList=ie.discoverSimilarRelationablesRelatedToSameDimensions(sourceRelationableId,relatedDimensionsList,InformationExplorer.FilteringPattern.OR);
+            }
+            if(similarRelationableList!=null) {
+                for (Relationable currentRelationable : similarRelationableList) {
+                    MeasurableInstanceDetailInfoVO currentMeasurableInstanceDetailInfoVO=getMeasurableInstanceDetailInfoVO(targetSpace,currentRelationable.getId());
+                    MeasurableInstanceAndRelationsDetailInfoVO currentMeasurableInstanceAndRelationsDetailInfoVO=new MeasurableInstanceAndRelationsDetailInfoVO();
+                    currentMeasurableInstanceAndRelationsDetailInfoVO.setMeasurableInstanceDetailInfo(currentMeasurableInstanceDetailInfoVO);
+                    similarMeasurableInstanceAndRelationsDetailInfoList.add(currentMeasurableInstanceAndRelationsDetailInfoVO);
+
+                    List<Relation> currentRelationableRelations=null;
+                    List<RelationDetailInfoVO> currentRelationableAndDimensionsRelationsInfoList=new ArrayList<>();
+                    if(currentRelationable instanceof Fact){
+                        Fact currentFact=(Fact)currentRelationable;
+                        currentRelationableRelations=currentFact.getAllRelations();
+                    }
+                    if(currentRelationable instanceof Dimension){
+                        Dimension currentDimension=(Dimension)currentRelationable;
+                        currentRelationableRelations=currentDimension.getAllRelations();
+                    }
+
+                    for(Relation currentRelation:currentRelationableRelations){
+                        Relationable fromRelationable=currentRelation.getFromRelationable();
+                        Relationable toRelationable=currentRelation.getToRelationable();
+                        String otherSideRelationableId=null;
+                        if(fromRelationable.getId().equals(currentRelationable.getId())){
+                            otherSideRelationableId=toRelationable.getId();
+                            if(relatedDimensionsList.contains(otherSideRelationableId)){
+                                RelationDetailInfoVO matchedRelationDetailInfoVO =getRelationDetailInfoById(targetSpace,currentRelation.getId());
+                                currentRelationableAndDimensionsRelationsInfoList.add(matchedRelationDetailInfoVO);
+                            }
+                        }else{
+                            otherSideRelationableId=fromRelationable.getId();
+                            if(relatedDimensionsList.contains(otherSideRelationableId)){
+                                RelationDetailInfoVO matchedRelationDetailInfoVO =getRelationDetailInfoById(targetSpace,currentRelation.getId());
+                                currentRelationableAndDimensionsRelationsInfoList.add(matchedRelationDetailInfoVO);
+                            }
+                        }
+                    }
+                    currentMeasurableInstanceAndRelationsDetailInfoVO.setRelationsDetailInfoList(currentRelationableAndDimensionsRelationsInfoList);
+                }
+            }
+            return typeInstanceSimilarDataDetailVO;
+        } catch (InfoDiscoveryEngineRuntimeException e) {
+            e.printStackTrace();
+        } finally {
+            if(targetSpace!=null){
+                targetSpace.closeSpace();
+            }
+        }
+        return null;
+    }
+
 }

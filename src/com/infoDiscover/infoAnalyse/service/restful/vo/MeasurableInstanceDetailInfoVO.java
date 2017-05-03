@@ -10,6 +10,7 @@ public class MeasurableInstanceDetailInfoVO {
     private String discoverSpaceName;
     private String measurableType;
     private String measurableName;
+    private String measurableAliasName;
     private List<PropertyVO> measurableProperties;
     private List<TypePropertyVO> typePropertyList;
     private String measurableId;
@@ -60,5 +61,13 @@ public class MeasurableInstanceDetailInfoVO {
 
     public void setMeasurableId(String measurableId) {
         this.measurableId = measurableId;
+    }
+
+    public String getMeasurableAliasName() {
+        return measurableAliasName;
+    }
+
+    public void setMeasurableAliasName(String measurableAliasName) {
+        this.measurableAliasName = measurableAliasName;
     }
 }

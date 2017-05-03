@@ -11,7 +11,7 @@ import java.util.List;
 public class TypeInstanceRelationsDetailVO {
 
     private RelationableValueDetailVO sourceTypeInstance;
-    private List<RelationInfoDetailVO> relationsInfo;
+    private List<RelationDetailInfoVO> relationsInfo;
 
     public RelationableValueDetailVO getSourceTypeInstance() {
         return sourceTypeInstance;
@@ -21,11 +21,11 @@ public class TypeInstanceRelationsDetailVO {
         this.sourceTypeInstance = sourceTypeInstance;
     }
 
-    public List<RelationInfoDetailVO> getRelationsInfo() {
+    public List<RelationDetailInfoVO> getRelationsInfo() {
         return relationsInfo;
     }
 
-    public void setRelationsInfo(List<RelationInfoDetailVO> relationsInfo) {
+    public void setRelationsInfo(List<RelationDetailInfoVO> relationsInfo) {
         this.relationsInfo = relationsInfo;
     }
 }
