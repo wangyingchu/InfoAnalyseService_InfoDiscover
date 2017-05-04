@@ -66,4 +66,22 @@ public class TypeInstanceAnalyseService {
         TypeInstanceSimilarDataDetailVO resultInfo=DiscoverSpaceOperationUtil.getSimilarRelationableConnectedSameDimensions(discoverSpaceName,relationableId,dimensionsIdList,filteringPattern);
         return resultInfo;
     }
+
+    @GET
+    @Path("/typeInstancesShortestPathExplore/{discoverSpaceName}/{relationableAId}/{relationableBId}")
+    @Produces("application/json")
+    public ShortestPathBetweenTwoMeasurablesDetailInfoVO getShortestPathBetweenTwoTypeInstances(@PathParam("discoverSpaceName")String discoverSpaceName, @PathParam("relationableAId")String relationableAId,
+                                                                                             @PathParam("relationableBId")String relationableBId){
+        ShortestPathBetweenTwoMeasurablesDetailInfoVO resultInfo=DiscoverSpaceOperationUtil.getShortestPathBetweenTwoRelationable(discoverSpaceName,relationableAId,relationableBId);
+        return resultInfo;
+    }
+
+    @GET
+    @Path("/typeInstancesAllPathsExplore/{discoverSpaceName}/{relationableAId}/{relationableBId}")
+    @Produces("application/json")
+    public AllPathsBetweenTwoMeasurablesDetailInfoVO getAllPathsBetweenTwoTypeInstances(@PathParam("discoverSpaceName")String discoverSpaceName, @PathParam("relationableAId")String relationableAId,
+                                                                                                           @PathParam("relationableBId")String relationableBId){
+        AllPathsBetweenTwoMeasurablesDetailInfoVO resultInfo=DiscoverSpaceOperationUtil.getAllPathsBetweenTwoRelationable(discoverSpaceName,relationableAId,relationableBId);
+        return resultInfo;
+    }
 }

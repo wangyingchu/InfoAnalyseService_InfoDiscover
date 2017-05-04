@@ -1824,4 +1824,93 @@ public class DiscoverSpaceOperationUtil {
         return null;
     }
 
+    public static ShortestPathBetweenTwoMeasurablesDetailInfoVO getShortestPathBetweenTwoRelationable(String spaceName,String relationable1Id,String relationable2Id){
+        InfoDiscoverSpace targetSpace=null;
+        try {
+            targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
+            MeasurableInstanceDetailInfoVO relationableAVO=getMeasurableInstanceDetailInfoVO(targetSpace,relationable1Id);
+            if(relationableAVO==null){
+                return null;
+            }
+            MeasurableInstanceDetailInfoVO relationableBVO=getMeasurableInstanceDetailInfoVO(targetSpace,relationable2Id);
+            if(relationableBVO==null){
+                return null;
+            }
+            ShortestPathBetweenTwoMeasurablesDetailInfoVO shortestPathBetweenTwoMeasurablesDetailInfoVO=new ShortestPathBetweenTwoMeasurablesDetailInfoVO();
+            shortestPathBetweenTwoMeasurablesDetailInfoVO.setMeasurableA(relationableAVO);
+            shortestPathBetweenTwoMeasurablesDetailInfoVO.setMeasurableB(relationableBVO);
+
+            InformationExplorer ie=targetSpace.getInformationExplorer();
+            Stack<Relation> shortestPathRelationsStack=ie.discoverRelationablesShortestPath(relationable1Id,relationable2Id,RelationDirection.TWO_WAY);
+
+            List<RelationDetailInfoVO> pathRelationsDetailInfo =new ArrayList<>();
+            shortestPathBetweenTwoMeasurablesDetailInfoVO.setPathRelationsDetailInfo(pathRelationsDetailInfo);
+
+            for(int i=0;i<shortestPathRelationsStack.size();i++){
+                Relation currentRelation=shortestPathRelationsStack.elementAt(i);
+                RelationDetailInfoVO currentRelationDetailInfoVO=getRelationDetailInfoById(targetSpace, currentRelation.getId());
+                pathRelationsDetailInfo.add(currentRelationDetailInfoVO);
+            }
+            return shortestPathBetweenTwoMeasurablesDetailInfoVO;
+        } catch (InfoDiscoveryEngineRuntimeException e) {
+            e.printStackTrace();
+        } finally {
+            if(targetSpace!=null){
+                targetSpace.closeSpace();
+            }
+        }
+        return null;
+    }
+
+    public static AllPathsBetweenTwoMeasurablesDetailInfoVO getAllPathsBetweenTwoRelationable(String spaceName,String relationable1Id,String relationable2Id){
+        InfoDiscoverSpace targetSpace=null;
+        try {
+            targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
+            MeasurableInstanceDetailInfoVO relationableAVO=getMeasurableInstanceDetailInfoVO(targetSpace,relationable1Id);
+            if(relationableAVO==null){
+                return null;
+            }
+            MeasurableInstanceDetailInfoVO relationableBVO=getMeasurableInstanceDetailInfoVO(targetSpace,relationable2Id);
+            if(relationableBVO==null){
+                return null;
+            }
+            AllPathsBetweenTwoMeasurablesDetailInfoVO allPathsBetweenTwoMeasurablesDetailInfoVO=new AllPathsBetweenTwoMeasurablesDetailInfoVO();
+            allPathsBetweenTwoMeasurablesDetailInfoVO.setMeasurableA(relationableAVO);
+            allPathsBetweenTwoMeasurablesDetailInfoVO.setMeasurableB(relationableBVO);
+
+            InformationExplorer ie=targetSpace.getInformationExplorer();
+            Stack<Relation> shortestPathRelationsStack=ie.discoverRelationablesShortestPath(relationable1Id,relationable2Id,RelationDirection.TWO_WAY);
+
+            List<RelationDetailInfoVO> shortestPathRelationsDetailInfo =new ArrayList<>();
+            allPathsBetweenTwoMeasurablesDetailInfoVO.setShortestPathRelationsDetailInfo(shortestPathRelationsDetailInfo);
+            for(int i=0;i<shortestPathRelationsStack.size();i++){
+                Relation currentRelation=shortestPathRelationsStack.elementAt(i);
+                RelationDetailInfoVO currentRelationDetailInfoVO=getRelationDetailInfoById(targetSpace, currentRelation.getId());
+                shortestPathRelationsDetailInfo.add(currentRelationDetailInfoVO);
+            }
+
+            ie=targetSpace.getInformationExplorer();
+            List<Stack<Relation>> allPathsRelationsStackList=ie.discoverRelationablesAllPaths(relationable1Id,relationable2Id);
+
+            List<List<RelationDetailInfoVO>> allPathsRelationsDetailInfo=new ArrayList<>();
+            allPathsBetweenTwoMeasurablesDetailInfoVO.setAllPathsRelationsDetailInfo(allPathsRelationsDetailInfo);
+            for(Stack<Relation> currentPathInfo:allPathsRelationsStackList){
+                List<RelationDetailInfoVO> currentPathDetailInfoList=new ArrayList<>();
+                allPathsRelationsDetailInfo.add(currentPathDetailInfoList);
+                for(int i=0;i<currentPathInfo.size();i++){
+                    Relation currentRelation=currentPathInfo.elementAt(i);
+                    RelationDetailInfoVO currentRelationDetailInfoVO=getRelationDetailInfoById(targetSpace, currentRelation.getId());
+                    currentPathDetailInfoList.add(currentRelationDetailInfoVO);
+                }
+            }
+            return allPathsBetweenTwoMeasurablesDetailInfoVO;
+        } catch (InfoDiscoveryEngineRuntimeException e) {
+            e.printStackTrace();
+        } finally {
+            if(targetSpace!=null){
+                targetSpace.closeSpace();
+            }
+        }
+        return null;
+    }
 }
