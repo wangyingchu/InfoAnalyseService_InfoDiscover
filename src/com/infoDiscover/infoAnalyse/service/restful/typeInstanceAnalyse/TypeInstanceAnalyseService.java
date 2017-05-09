@@ -77,11 +77,40 @@ public class TypeInstanceAnalyseService {
     }
 
     @GET
+    @Path("/typeInstancesSpecifiedPathExplore/{discoverSpaceName}/{relationableAId}/{relationableBId}/{pathRelationIds}")
+    @Produces("application/json")
+    public MeasurablesPathInfoVO getSpecifiedPathBetweenTwoTypeInstances(@PathParam("discoverSpaceName")String discoverSpaceName, @PathParam("relationableAId")String relationableAId,
+                                                                                                @PathParam("relationableBId")String relationableBId,@PathParam("pathRelationIds")String pathRelationIds){
+        MeasurablesPathInfoVO resultInfo=DiscoverSpaceOperationUtil.getSpecifiedPathBetweenTwoRelationable(discoverSpaceName,relationableAId,relationableBId,pathRelationIds);
+        return resultInfo;
+    }
+
+    @GET
     @Path("/typeInstancesAllPathsExplore/{discoverSpaceName}/{relationableAId}/{relationableBId}")
     @Produces("application/json")
     public AllPathsBetweenTwoMeasurablesDetailInfoVO getAllPathsBetweenTwoTypeInstances(@PathParam("discoverSpaceName")String discoverSpaceName, @PathParam("relationableAId")String relationableAId,
                                                                                                            @PathParam("relationableBId")String relationableBId){
         AllPathsBetweenTwoMeasurablesDetailInfoVO resultInfo=DiscoverSpaceOperationUtil.getAllPathsBetweenTwoRelationable(discoverSpaceName,relationableAId,relationableBId);
+        return resultInfo;
+    }
+
+    @GET
+    @Path("/typeInstancesShortestPathsExplore/{discoverSpaceName}/{relationableAId}/{relationableBId}/{pathNumber}")
+    @Produces("application/json")
+    public PathsBetweenTwoMeasurablesDetailInfoVO getShortestPathsBetweenTwoTypeInstances(@PathParam("discoverSpaceName")String discoverSpaceName, @PathParam("relationableAId")String relationableAId,
+                                                                                        @PathParam("relationableBId")String relationableBId,@PathParam("pathNumber")String pathNumber){
+        int pathNumberInt=Integer.parseInt(pathNumber);
+        PathsBetweenTwoMeasurablesDetailInfoVO resultInfo=DiscoverSpaceOperationUtil.getPathsBetweenTwoRelationable(discoverSpaceName,relationableAId,relationableBId,"SHORTEST",pathNumberInt);
+        return resultInfo;
+    }
+
+    @GET
+    @Path("/typeInstancesLongestPathsExplore/{discoverSpaceName}/{relationableAId}/{relationableBId}/{pathNumber}")
+    @Produces("application/json")
+    public PathsBetweenTwoMeasurablesDetailInfoVO getLongestPathsBetweenTwoTypeInstances(@PathParam("discoverSpaceName")String discoverSpaceName, @PathParam("relationableAId")String relationableAId,
+                                                                                        @PathParam("relationableBId")String relationableBId,@PathParam("pathNumber")String pathNumber){
+        int pathNumberInt=Integer.parseInt(pathNumber);
+        PathsBetweenTwoMeasurablesDetailInfoVO resultInfo=DiscoverSpaceOperationUtil.getPathsBetweenTwoRelationable(discoverSpaceName,relationableAId,relationableBId,"LONGEST",pathNumberInt);
         return resultInfo;
     }
 }

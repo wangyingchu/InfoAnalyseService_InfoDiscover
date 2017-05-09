@@ -1841,7 +1841,7 @@ public class DiscoverSpaceOperationUtil {
             shortestPathBetweenTwoMeasurablesDetailInfoVO.setMeasurableB(relationableBVO);
 
             InformationExplorer ie=targetSpace.getInformationExplorer();
-            Stack<Relation> shortestPathRelationsStack=ie.discoverRelationablesShortestPath(relationable1Id,relationable2Id,RelationDirection.TWO_WAY);
+            Stack<Relation> shortestPathRelationsStack=ie.discoverRelationablesShortestPath(relationable1Id,relationable2Id);
             if(shortestPathRelationsStack==null){
                 return null;
             }
@@ -1863,6 +1863,46 @@ public class DiscoverSpaceOperationUtil {
         return null;
     }
 
+    public static MeasurablesPathInfoVO getSpecifiedPathBetweenTwoRelationable(String spaceName,String relationable1Id,String relationable2Id,String pathRelationIds){
+        InfoDiscoverSpace targetSpace=null;
+        try {
+            targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
+            MeasurableInstanceDetailInfoVO relationableAVO=getMeasurableInstanceDetailInfoVO(targetSpace,relationable1Id);
+            if(relationableAVO==null){
+                return null;
+            }
+            MeasurableInstanceDetailInfoVO relationableBVO=getMeasurableInstanceDetailInfoVO(targetSpace,relationable2Id);
+            if(relationableBVO==null){
+                return null;
+            }
+            String[] relationsIdArray=pathRelationIds.split(",");
+            List<String> pathRelationsList=new ArrayList<>();
+            for(String currentRelationId:relationsIdArray){
+                pathRelationsList.add(currentRelationId);
+            }
+            if(pathRelationsList==null||pathRelationsList.size()==0){
+                return null;
+            }
+            List<RelationDetailInfoVO> pathRelationList=new ArrayList<>();
+            for(String currentRelationId:pathRelationsList){
+                RelationDetailInfoVO currentRelationDetailInfoVO=getRelationDetailInfoById(targetSpace, currentRelationId);
+                if(currentRelationDetailInfoVO==null){
+                    return null;
+                }
+                pathRelationList.add(currentRelationDetailInfoVO);
+            }
+            MeasurablesPathInfoVO measurablesPathInfoVO=new MeasurablesPathInfoVO();
+            measurablesPathInfoVO.setMeasurableA(relationableAVO);
+            measurablesPathInfoVO.setMeasurableB(relationableBVO);
+            measurablesPathInfoVO.setPathRelationsDetailInfo(pathRelationList);
+            return measurablesPathInfoVO;
+        }finally {
+            if(targetSpace!=null){
+                targetSpace.closeSpace();
+            }
+        }
+    }
+
     public static AllPathsBetweenTwoMeasurablesDetailInfoVO getAllPathsBetweenTwoRelationable(String spaceName,String relationable1Id,String relationable2Id){
         InfoDiscoverSpace targetSpace=null;
         try {
@@ -1880,7 +1920,7 @@ public class DiscoverSpaceOperationUtil {
             allPathsBetweenTwoMeasurablesDetailInfoVO.setMeasurableB(relationableBVO);
 
             InformationExplorer ie=targetSpace.getInformationExplorer();
-            Stack<Relation> shortestPathRelationsStack=ie.discoverRelationablesShortestPath(relationable1Id,relationable2Id,RelationDirection.TWO_WAY);
+            Stack<Relation> shortestPathRelationsStack=ie.discoverRelationablesShortestPath(relationable1Id,relationable2Id);
             if(shortestPathRelationsStack==null){
                 return null;
             }
@@ -1909,6 +1949,54 @@ public class DiscoverSpaceOperationUtil {
                 }
             }
             return allPathsBetweenTwoMeasurablesDetailInfoVO;
+        } catch (InfoDiscoveryEngineRuntimeException e) {
+            e.printStackTrace();
+        } finally {
+            if(targetSpace!=null){
+                targetSpace.closeSpace();
+            }
+        }
+        return null;
+    }
+
+    public static PathsBetweenTwoMeasurablesDetailInfoVO getPathsBetweenTwoRelationable(String spaceName,String relationable1Id,String relationable2Id,String pathType,int pathNumber){
+        InfoDiscoverSpace targetSpace=null;
+        try {
+            targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
+            MeasurableInstanceDetailInfoVO relationableAVO=getMeasurableInstanceDetailInfoVO(targetSpace,relationable1Id);
+            if(relationableAVO==null){
+                return null;
+            }
+            MeasurableInstanceDetailInfoVO relationableBVO=getMeasurableInstanceDetailInfoVO(targetSpace,relationable2Id);
+            if(relationableBVO==null){
+                return null;
+            }
+            PathsBetweenTwoMeasurablesDetailInfoVO pathsBetweenTwoMeasurablesDetailInfoVO=new PathsBetweenTwoMeasurablesDetailInfoVO();
+            pathsBetweenTwoMeasurablesDetailInfoVO.setMeasurableA(relationableAVO);
+            pathsBetweenTwoMeasurablesDetailInfoVO.setMeasurableB(relationableBVO);
+
+            InformationExplorer ie=targetSpace.getInformationExplorer();
+            List<Stack<Relation>> relationStackList=null;
+            if("LONGEST".equals(pathType)){
+                relationStackList=ie.discoverRelationablesLongestPaths(relationable1Id,relationable2Id,pathNumber);
+            }
+            if("SHORTEST".equals(pathType)){
+                relationStackList=ie.discoverRelationablesShortestPaths(relationable1Id,relationable2Id,pathNumber);
+            }
+            List<List<RelationDetailInfoVO>> pathsRelationsDetailInfo=new ArrayList<>();
+            pathsBetweenTwoMeasurablesDetailInfoVO.setPathsRelationsDetailInfo(pathsRelationsDetailInfo);
+            if(relationStackList!=null) {
+                for (Stack<Relation> currentPathInfo : relationStackList) {
+                    List<RelationDetailInfoVO> currentPathDetailInfoList = new ArrayList<>();
+                    pathsRelationsDetailInfo.add(currentPathDetailInfoList);
+                    for (int i = 0; i < currentPathInfo.size(); i++) {
+                        Relation currentRelation = currentPathInfo.elementAt(i);
+                        RelationDetailInfoVO currentRelationDetailInfoVO = getRelationDetailInfoById(targetSpace, currentRelation.getId());
+                        currentPathDetailInfoList.add(currentRelationDetailInfoVO);
+                    }
+                }
+            }
+            return pathsBetweenTwoMeasurablesDetailInfoVO;
         } catch (InfoDiscoveryEngineRuntimeException e) {
             e.printStackTrace();
         } finally {

@@ -38,59 +38,33 @@ var options = {
     },
     edges: {
         width: 2,
-        shadow:false,
+        shadow:true,
         font: {
             size: 10
         },
         color: GRAY,
-		smooth:false
-		/*
         smooth: {
             type: "vertical",
             forceDirection: "none"
         }
-		*/  
-  },
-	/*
+    },
     physics:{
         barnesHut:{gravitationalConstant:-30000},
         stabilization: {iterations:2500}
-    }
-	*/
-	physics:{
-        "barnesHut": {
-		  	"gravitationalConstant": -100000,
-		  	"centralGravity": 0,
-		  	"springLength": 220,
-		  	"springConstant": 0.2,
-	 		"damping": 1,
-		  	"avoidOverlap": 1
-    	},
-    	"minVelocity": 0.75
-    }
-	/*
-	physics: {
-		hierarchicalRepulsion: {
-			centralGravity: 0,
-			springLength: 240,
-			nodeDistance: 200
-		},
-
-
-		minVelocity: 0.75,
-		solver: "hierarchicalRepulsion"
-	}
-    */     
+    },
+    interaction:{hover:true}
 };
 
 $(document).ready(function() {
     discoverSpaceName=getQueryString("discoverSpace");
     var relationableAId=getQueryString("relationableAId");
 	var relationableBId=getQueryString("relationableBId");	
+	var pathRelationIds=getQueryString("pathRelationIds");
     var graphHeight=getQueryString("graphHeight");
     if(!discoverSpaceName){return;}
     if(!relationableAId){return;}
-	if(!relationableBId){return;}	
+	if(!relationableBId){return;}
+	if(!pathRelationIds){return;}	
     if(graphHeight){
         document.getElementById('mynetwork').style.height=""+graphHeight+"px";
     }
@@ -98,13 +72,16 @@ $(document).ready(function() {
     relationableAId=relationableAId.replace(/:/g, "%3a");
 	relationableBId=relationableBId.replace(/#/g, "%23");
     relationableBId=relationableBId.replace(/:/g, "%3a");
-    var restURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeInstanceAnalyseService/typeInstancesAllPathsExplore/"+discoverSpaceName+"/"+relationableAId+"/"+relationableBId+"/";
+	pathRelationIds=pathRelationIds.replace(/#/g, "%23");
+    pathRelationIds=pathRelationIds.replace(/:/g, "%3a");
+
+    var restURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeInstanceAnalyseService/typeInstancesSpecifiedPathExplore/"+discoverSpaceName+"/"+relationableAId+"/"+relationableBId+"/"+pathRelationIds+"/";
     $.ajax({
         url: restURL
     }).then(function(data) {		
 		var measurableA=data.measurableA;
 		var measurableB=data.measurableB;
-		var shortestPathInfo=data.shortestPathRelationsDetailInfo;
+		var specifiedPathInfo=data.pathRelationsDetailInfo;
 		
 		var measurableAId=measurableA.measurableId;
         var measurableALabelName=measurableA.measurableName;
@@ -119,10 +96,7 @@ $(document).ready(function() {
  				size: 22, 
                 color: BLACK,
                 shape: dataInstanceTypeShapeMap[measurableA.measurableType],                
- 				title:getDetailTitleForMeasurable(measurableA),
-				physics:false,
-				x:0,
-				y:0
+ 				title:getDetailTitleForMeasurable(measurableA)
             }
         ); 
 
@@ -139,14 +113,11 @@ $(document).ready(function() {
  				size: 22, 
                 color: BLACK,
                 shape: dataInstanceTypeShapeMap[measurableB.measurableType],                
- 				title:getDetailTitleForMeasurable(measurableB),
-				physics:false,
-				x:Number(graphHeight)+100,
-				y:0
+ 				title:getDetailTitleForMeasurable(measurableB)
             }
         ); 
 		
-        $.each(shortestPathInfo,function(index,value){
+        $.each(specifiedPathInfo,function(index,value){
             var relationId=value.id;
             var relationTypeName=value.relationTypeName;
             var fromRelationable=value.fromRelationable;
@@ -169,7 +140,6 @@ $(document).ready(function() {
                                 id:fromRelationable.id,
                                 label: fromTypeInstanceLabelName+" ["+fromRelationable.id+"]",
                                 group: fromRelationable.relationableTypeKind,
-								size: 16, 
                                 shape: dataInstanceTypeShapeMap[fromRelationable.relationableTypeKind],
                                 title: getDetailTitleForRelationable(fromRelationable),
 								color: getCurrentGlobalColor(currentExploreLevel)
@@ -185,7 +155,6 @@ $(document).ready(function() {
                                 id:toRelationable.id,
                                 label: toTypeInstanceLabelName+" ["+toRelationable.id+"]",
                                 group: toRelationable.relationableTypeKind,
-								size: 16,
                                 shape: dataInstanceTypeShapeMap[toRelationable.relationableTypeKind],
                                 title: getDetailTitleForRelationable(toRelationable),
 								color: getCurrentGlobalColor(currentExploreLevel)
@@ -203,90 +172,14 @@ $(document).ready(function() {
             edgesDataArray.push(
                 {
                     from: fromRelationable.id, to:toRelationable.id,
-
 					width: 8,
                 	color: getCurrentGlobalColor(currentExploreLevel),
                     arrows:'to',
-                    label:relationId+" (\u6700\u77ed\u8def\u5f84)",
+                    label:relationId,
                     title: '\u5173\u7cfb: '+relationTitle+" ["+relationId+"]"+getPropertiesDetailInfo(value.propertiesValueList)					
                 });
             existRelationIdArray.push(relationId);
-        });
-
-
-		var allPathsInfo=data.allPathsRelationsDetailInfo;	
-		$.each(allPathsInfo,function(index,value){
-			var currentPath=value;
-			var currentPathNumber=index+1;
-			$.each(currentPath,function(index,value){
-		        var relationId=value.id;
-				//if(!checkEdgeExistence(relationId)){
-				    var relationTypeName=value.relationTypeName;
-				    var fromRelationable=value.fromRelationable;
-				    var toRelationable=value.toRelationable;
-		 			var fromTypeInstanceLabelName=fromRelationable.relationableTypeName;
-					if(fromRelationable.relationableTypeAliasName){
-						fromTypeInstanceLabelName=fromRelationable.relationableTypeAliasName;
-					}
-					var toTypeInstanceLabelName=toRelationable.relationableTypeName;
-					if(toRelationable.relationableTypeAliasName){
-						toTypeInstanceLabelName=toRelationable.relationableTypeAliasName;
-					}
-				    if(fromRelationable.id!=toRelationable.id){
-				        if(fromRelationable.id!=sourceTypeInstanceId){
-				            if(!checkNodeDataExistence(fromRelationable.id)){
-				                nodesDataArray.push(
-				                    {
-				                        id:fromRelationable.id,
-				                        label: fromTypeInstanceLabelName+" ["+fromRelationable.id+"]",
-				                        group: fromRelationable.relationableTypeKind,
-				                        shape: dataInstanceTypeShapeMap[fromRelationable.relationableTypeKind],
-				                        title: getDetailTitleForRelationable(fromRelationable),
-										size: 14, 
-										color: getCurrentGlobalColor(currentExploreLevel)
-								
-				                    }
-				                );
-				            }
-				        }
-				        if(toRelationable.id!=sourceTypeInstanceId){
-				            if(!checkNodeDataExistence(toRelationable.id)){
-				                nodesDataArray.push(
-				                    {
-				                        id:toRelationable.id,
-				                        label: toTypeInstanceLabelName+" ["+toRelationable.id+"]",
-				                        group: toRelationable.relationableTypeKind,
-				                        shape: dataInstanceTypeShapeMap[toRelationable.relationableTypeKind],
-				                        title: getDetailTitleForRelationable(toRelationable),
-										size: 14, 
-										color: getCurrentGlobalColor(currentExploreLevel)
-								
-				                    }
-				                );
-				            }
-				        }
-				    }
-
-					var relationTitle=relationTypeName;
-					if(value.relationTypeAliasName){
-						relationTitle=relationTypeName+"("+value.relationTypeAliasName+")";
-					}
-				    edgesDataArray.push(
-				        {
-				            from: fromRelationable.id, to:toRelationable.id,
-							width: 4,
-				        	color: getCurrentGlobalColor(currentExploreLevel),
-				            arrows:'to',
-				            //label:relationId+"(\u8def\u5f84 "+(index+1)+")",
-							label:"\u8def\u5f84 "+currentPathNumber,
-							dashes:true,
-				            title: '\u5173\u7cfb: '+relationTitle+" ["+relationId+"]"+getPropertiesDetailInfo(value.propertiesValueList)					
-				        });
-				    existRelationIdArray.push(relationId);
-				//}
-		    });
-			currentExploreLevel=currentExploreLevel+1;
-		 });
+        });			
  		// create a network
         var container = document.getElementById('mynetwork');
         nodes = new vis.DataSet(nodesDataArray);
@@ -309,7 +202,6 @@ $(document).ready(function() {
                 appendNewSelectedRelations(data.relationsInfo,currentClickSourceNodeId);
             });           
         });
-
     });
 });
 
@@ -341,7 +233,6 @@ function appendNewSelectedRelations(relationsInfo,selectedSourceNodeId){
                         group: fromRelationable.relationableTypeKind,
                         shape: dataInstanceTypeShapeMap[fromRelationable.relationableTypeKind],
                         title: getDetailTitleForRelationable(fromRelationable),
-						size: 12,
                         color: LIGHT_GRAY
                     });
                 }
@@ -355,8 +246,7 @@ function appendNewSelectedRelations(relationsInfo,selectedSourceNodeId){
                         label: toTypeInstanceLabelName+" ["+toRelationable.id+"]",
                         group: toRelationable.relationableTypeKind,
                         shape: dataInstanceTypeShapeMap[toRelationable.relationableTypeKind],
-                        title: getDetailTitleForRelationable(toRelationable),	
-						size: 12,			
+                        title: getDetailTitleForRelationable(toRelationable),				
                         color: LIGHT_GRAY
                     });
                 }
@@ -468,3 +358,34 @@ function getPropertiesDetailInfo(propertiesList){
 	}
 	return detailTitle;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
