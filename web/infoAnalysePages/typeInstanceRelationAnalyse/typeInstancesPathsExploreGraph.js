@@ -6,6 +6,8 @@ var sourceTypeInstanceId;
 var nodesDataArray=[];
 var edgesDataArray=[];
 var existRelationIdArray=[];
+var existRelationPathDescMap={};
+var existRelationConfigMap={};
 
 var dataInstanceTypeShapeMap=[];
 dataInstanceTypeShapeMap["TYPEKIND_DIMENSION"]='dot';
@@ -89,10 +91,12 @@ $(document).ready(function() {
     var relationableBId=getQueryString("relationableBId"); 
  	var pathNumber=getQueryString("pathNumber"); 
     var graphHeight=getQueryString("graphHeight");
+    var pathType=getQueryString("pathType");
     if(!discoverSpaceName){return;}
     if(!relationableAId){return;}
     if(!relationableBId){return;}
-	if(!pathNumber){return;}   
+    if(!pathType){return;}
+	  
     if(graphHeight){
         document.getElementById('mynetwork').style.height=""+graphHeight+"px";
     }
@@ -100,7 +104,20 @@ $(document).ready(function() {
     relationableAId=relationableAId.replace(/:/g, "%3a");
     relationableBId=relationableBId.replace(/#/g, "%23");
     relationableBId=relationableBId.replace(/:/g, "%3a");
-    var restURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeInstanceAnalyseService/typeInstancesLongestPathsExplore/"+discoverSpaceName+"/"+relationableAId+"/"+relationableBId+"/"+pathNumber+"/";
+
+    var restURL=null;
+    if(pathType=="SHORTEST"){
+        if(!pathNumber){return;} 
+        restURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeInstanceAnalyseService/typeInstancesShortestPathsExplore/"+discoverSpaceName+"/"+relationableAId+"/"+relationableBId+"/"+pathNumber+"/";
+    }
+    if(pathType=="LONGEST"){
+        if(!pathNumber){return;} 
+        restURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeInstanceAnalyseService/typeInstancesLongestPathsExplore/"+discoverSpaceName+"/"+relationableAId+"/"+relationableBId+"/"+pathNumber+"/";
+    }
+    if(pathType=="ALL"){
+        restURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeInstanceAnalyseService/typeInstancesAllPathsExplore/"+discoverSpaceName+"/"+relationableAId+"/"+relationableBId+"/";
+    }
+
     $.ajax({
         url: restURL
     }).then(function(data) {        
@@ -147,13 +164,20 @@ $(document).ready(function() {
                 y:0
             }
         );   
-        var allPathsInfo=data.pathsRelationsDetailInfo;  
+
+        var allPathsInfo=null;
+        if(pathType=="ALL"){
+            allPathsInfo=data.allPathsRelationsDetailInfo; 
+        }else{
+            allPathsInfo=data.pathsRelationsDetailInfo; 
+        }   
         $.each(allPathsInfo,function(index,value){
             var currentPath=value;
             var currentPathNumber=index+1;
             $.each(currentPath,function(index,value){
-                var relationId=value.id;
-                //if(!checkEdgeExistence(relationId)){
+                var relationId=value.id;				
+				var edgePathDesc=getRelationPathDescInfo(relationId,currentPathNumber);
+				if(!existRelationConfigMap[relationId]){               
                     var relationTypeName=value.relationTypeName;
                     var fromRelationable=value.fromRelationable;
                     var toRelationable=value.toRelationable;
@@ -204,19 +228,25 @@ $(document).ready(function() {
                     if(value.relationTypeAliasName){
                         relationTitle=relationTypeName+"("+value.relationTypeAliasName+")";
                     }
-                    edgesDataArray.push(
-                        {
+
+					var edgeConfigItem={							
                             from: fromRelationable.id, to:toRelationable.id,
                             width: 4,
                             color: getCurrentGlobalColor(currentExploreLevel),
                             arrows:'to',
-                            label:relationId+"(\u8def\u5f84 "+currentPathNumber+")",
-                            //label:"\u8def\u5f84 "+currentPathNumber,
+                            label:relationId+"(\u8def\u5f84 "+edgePathDesc+")",                           
                             dashes:true,
                             title: '\u5173\u7cfb: '+relationTitle+" ["+relationId+"]"+getPropertiesDetailInfo(value.propertiesValueList)                    
-                        });
+                    };
+					edgesDataArray.push(edgeConfigItem);
                     existRelationIdArray.push(relationId);
-                //}
+					existRelationConfigMap[relationId]=edgeConfigItem;
+                }else{					
+					var currentConfig=existRelationConfigMap[relationId];
+					currentConfig.dashes=true;
+					currentConfig.color=GRAY;
+					currentConfig.label=relationId+"(\u8def\u5f84 "+edgePathDesc+")";
+				}
             });
             currentExploreLevel=currentExploreLevel+1;
          });
@@ -344,6 +374,16 @@ function checkEdgeExistence(edgeId){
         }
     });
     return existFlag;
+}
+
+function getRelationPathDescInfo(relationId,currentPathNumber){
+	if(existRelationPathDescMap[relationId]){
+		var currentPathDesc=existRelationPathDescMap[relationId];
+		existRelationPathDescMap[relationId]=currentPathDesc+" , "+currentPathNumber;
+	}else{	
+		existRelationPathDescMap[relationId]=currentPathNumber;
+	}
+	return existRelationPathDescMap[relationId];
 }
 
 function getDetailTitleForMeasurable(dataTypeInstance){
