@@ -92,6 +92,7 @@ $(document).ready(function() {
  	var pathNumber=getQueryString("pathNumber"); 
     var graphHeight=getQueryString("graphHeight");
     var pathType=getQueryString("pathType");
+    var pathDataIds=getQueryString("pathDataIds");
     if(!discoverSpaceName){return;}
     if(!relationableAId){return;}
     if(!relationableBId){return;}
@@ -116,6 +117,12 @@ $(document).ready(function() {
     }
     if(pathType=="ALL"){
         restURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeInstanceAnalyseService/typeInstancesAllPathsExplore/"+discoverSpaceName+"/"+relationableAId+"/"+relationableBId+"/";
+    }
+    if(pathType=="PATHDATA"){
+		if(!pathDataIds){return;}
+		pathDataIds=pathDataIds.replace(/#/g, "%23");
+    	pathDataIds=pathDataIds.replace(/:/g, "%3a");
+        restURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeInstanceAnalyseService/typeInstancesPathsContainDatasExplore/"+discoverSpaceName+"/"+relationableAId+"/"+relationableBId+"/"+pathDataIds+"/";
     }
 
     $.ajax({

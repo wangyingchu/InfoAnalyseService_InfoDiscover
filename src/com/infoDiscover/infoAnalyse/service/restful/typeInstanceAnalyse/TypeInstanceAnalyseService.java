@@ -7,7 +7,6 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -111,6 +110,15 @@ public class TypeInstanceAnalyseService {
                                                                                         @PathParam("relationableBId")String relationableBId,@PathParam("pathNumber")String pathNumber){
         int pathNumberInt=Integer.parseInt(pathNumber);
         PathsBetweenTwoMeasurablesDetailInfoVO resultInfo=DiscoverSpaceOperationUtil.getPathsBetweenTwoRelationable(discoverSpaceName,relationableAId,relationableBId,"LONGEST",pathNumberInt);
+        return resultInfo;
+    }
+
+    @GET
+    @Path("/typeInstancesPathsContainDatasExplore/{discoverSpaceName}/{relationableAId}/{relationableBId}/{containedDataIds}")
+    @Produces("application/json")
+    public PathsBetweenTwoMeasurablesDetailInfoVO getPathsContainDatasBetweenTwoTypeInstances(@PathParam("discoverSpaceName")String discoverSpaceName, @PathParam("relationableAId")String relationableAId,
+                                                                                         @PathParam("relationableBId")String relationableBId,@PathParam("containedDataIds")String containedDataIds){
+        PathsBetweenTwoMeasurablesDetailInfoVO resultInfo=DiscoverSpaceOperationUtil.getPathsContainPointedDatasBetweenTwoRelationables(discoverSpaceName,relationableAId,relationableBId,containedDataIds);
         return resultInfo;
     }
 }
