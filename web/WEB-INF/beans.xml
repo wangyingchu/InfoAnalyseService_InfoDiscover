@@ -16,6 +16,7 @@
     <bean id="typeInstanceAnalyseService" class="com.infoDiscover.infoAnalyse.service.restful.typeInstanceAnalyse.TypeInstanceAnalyseService"></bean>
     <bean id="infoDiscoverSpaceAnalyseService" class="com.infoDiscover.infoAnalyse.service.restful.infoDiscoverSpaceAnalyse.InfoDiscoverSpaceAnalyseService"></bean>
     <bean id="typeDataStatisticsAnalyseService" class="com.infoDiscover.infoAnalyse.service.restful.typeDataStatisticsAnalyse.TypeDataStatisticsAnalyseService"></bean>
+    <bean id="systemManagementService" class="com.infoDiscover.infoAnalyse.service.restful.systemManagement.SystemManagementService"></bean>
 
     <!-- 配置需要暴露的BeanService -->  
     <jaxrs:server id="restContainer" address="/">  
@@ -24,6 +25,7 @@
             <ref bean="typeInstanceAnalyseService" />
             <ref bean="infoDiscoverSpaceAnalyseService" />
             <ref bean="typeDataStatisticsAnalyseService" />
+            <ref bean="systemManagementService" />
         </jaxrs:serviceBeans>         
         <jaxrs:providers> 
         	<bean class="org.codehaus.jackson.jaxrs.JacksonJsonProvider"/> 

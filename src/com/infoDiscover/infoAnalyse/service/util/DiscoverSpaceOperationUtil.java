@@ -1517,85 +1517,19 @@ public class DiscoverSpaceOperationUtil {
         String typeKindRecordKey=spaceName+"_"+typeKind+"_"+typeName;
         if(TYPEKIND_AliasNameMap.get(typeKindRecordKey)!=null){
             return TYPEKIND_AliasNameMap.get(typeKindRecordKey);
+        }else{
+            return "";
         }
-        String metaConfigSpaceName = InfoAnalyseServicePropertyHandler.getPropertyValue(InfoAnalyseServicePropertyHandler.META_CONFIG_DISCOVERSPACE);
-        InfoDiscoverSpace metaConfigSpace = null;
-        try {
-            metaConfigSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(metaConfigSpaceName);
-            ExploreParameters typeKindRecordEP = new ExploreParameters();
-            typeKindRecordEP.setType(TYPEKIND_AliasNameFactType);
-            typeKindRecordEP.setDefaultFilteringItem(new EqualFilteringItem(MetaConfig_PropertyName_DiscoverSpace, spaceName));
-            typeKindRecordEP.addFilteringItem(new EqualFilteringItem(MetaConfig_PropertyName_TypeKind, typeKind), ExploreParameters.FilteringLogic.AND);
-            typeKindRecordEP.addFilteringItem(new EqualFilteringItem(MetaConfig_PropertyName_TypeName, typeName), ExploreParameters.FilteringLogic.AND);
-            typeKindRecordEP.setResultNumber(1);
-            InformationExplorer ie = metaConfigSpace.getInformationExplorer();
-            List<Fact> typeAliasRecordFactsList = ie.discoverFacts(typeKindRecordEP);
-            if(typeAliasRecordFactsList!=null) {
-                if(typeAliasRecordFactsList.size()>0){
-                    Fact targetFact=typeAliasRecordFactsList.get(0);
-                    String typeKindAliasName=targetFact.getProperty(MetaConfig_PropertyName_TypeAliasName).getPropertyValue().toString();
-                    TYPEKIND_AliasNameMap.put(typeKindRecordKey,typeKindAliasName);
-                    return typeKindAliasName;
-                }else{
-                    TYPEKIND_AliasNameMap.put(typeKindRecordKey,"");
-                }
-            }else{
-                TYPEKIND_AliasNameMap.put(typeKindRecordKey,"");
-            }
-        } catch (InfoDiscoveryEngineInfoExploreException e) {
-            e.printStackTrace();
-        } catch (InfoDiscoveryEngineRuntimeException e) {
-            e.printStackTrace();
-        }finally {
-            if(metaConfigSpace!=null){
-                metaConfigSpace.closeSpace();
-            }
-        }
-        return null;
     }
 
     private static String getTypePropertyAliasName(String spaceName,String typeKind,String typeName,String typePropertyName) {
         String propertyRecordKey=spaceName+"_"+typeKind+"_"+typeName+"_"+typePropertyName;
         if(TypeProperty_AliasNameMap.get(propertyRecordKey)!=null){
             return TypeProperty_AliasNameMap.get(propertyRecordKey);
+        }else{
+            return "";
         }
-        String metaConfigSpaceName = InfoAnalyseServicePropertyHandler.getPropertyValue(InfoAnalyseServicePropertyHandler.META_CONFIG_DISCOVERSPACE);
-        InfoDiscoverSpace metaConfigSpace = null;
-        try {
-            metaConfigSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(metaConfigSpaceName);
-            ExploreParameters typeKindRecordEP = new ExploreParameters();
-            typeKindRecordEP.setType(TYPEPROPERTY_AliasNameFactType);
-            typeKindRecordEP.setDefaultFilteringItem(new EqualFilteringItem(MetaConfig_PropertyName_DiscoverSpace, spaceName));
-            typeKindRecordEP.addFilteringItem(new EqualFilteringItem(MetaConfig_PropertyName_TypeKind, typeKind), ExploreParameters.FilteringLogic.AND);
-            typeKindRecordEP.addFilteringItem(new EqualFilteringItem(MetaConfig_PropertyName_TypeName, typeName), ExploreParameters.FilteringLogic.AND);
-            typeKindRecordEP.addFilteringItem(new EqualFilteringItem(MetaConfig_PropertyName_TypePropertyName, typePropertyName), ExploreParameters.FilteringLogic.AND);
-            typeKindRecordEP.setResultNumber(1);
-            InformationExplorer ie = metaConfigSpace.getInformationExplorer();
-            List<Fact> typePropertyAliasRecordFact = ie.discoverFacts(typeKindRecordEP);
-            if(typePropertyAliasRecordFact!=null) {
-                if(typePropertyAliasRecordFact.size()>0){
-                    Fact targetFact=typePropertyAliasRecordFact.get(0);
-                    String typeKindAliasName=targetFact.getProperty(MetaConfig_PropertyName_TypePropertyAliasName).getPropertyValue().toString();
-                    TypeProperty_AliasNameMap.put(propertyRecordKey,typeKindAliasName);
-                    return typeKindAliasName;
-                }else{
-                    TypeProperty_AliasNameMap.put(propertyRecordKey,"");
-                }
-            }else{
-                TypeProperty_AliasNameMap.put(propertyRecordKey,"");
-            }
-        } catch (InfoDiscoveryEngineInfoExploreException e) {
-            e.printStackTrace();
-        } catch (InfoDiscoveryEngineRuntimeException e) {
-            e.printStackTrace();
-        }finally {
-            if(metaConfigSpace!=null){
-                metaConfigSpace.closeSpace();
-            }
-        }
-        return null;
     }
-
 
     public static void clearItemAliasNameCache(){
         TYPEKIND_AliasNameMap.clear();
