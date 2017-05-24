@@ -1,6 +1,7 @@
 package com.infoDiscover.infoAnalyse.service.restful.typeInstanceAnalyse;
 
 import com.infoDiscover.infoAnalyse.service.restful.vo.*;
+import com.infoDiscover.infoAnalyse.service.util.DiscoverSpaceOperationConstant;
 import com.infoDiscover.infoAnalyse.service.util.DiscoverSpaceOperationUtil;
 
 import javax.ws.rs.GET;
@@ -8,6 +9,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by wangychu on 2/13/17.
@@ -46,6 +48,24 @@ public class TypeInstanceAnalyseService {
     @Produces("application/json")
     public MeasurableInstanceDetailInfoVO getTypeInstanceDetailInfo(@PathParam("discoverSpaceName")String discoverSpaceName, @PathParam("measurableInstanceId")String measurableInstanceId){
         MeasurableInstanceDetailInfoVO resultInfo=DiscoverSpaceOperationUtil.getMeasurableInstanceDetailInfo(discoverSpaceName,measurableInstanceId);
+        return resultInfo;
+    }
+
+    @GET
+    @Path("/typeInstancesInfoOfMeasurableTypes/{discoverSpaceName}/{measurableType}/{measurableTypeNames}")
+    @Produces("application/json")
+    public Map<String,MeasurableTypeDataInfoVO> getTypeInstancesInfoOfMeasurableTypes(@PathParam("discoverSpaceName")String discoverSpaceName, @PathParam("measurableType")String measurableType, @PathParam("measurableTypeNames")String measurableTypeNames){
+        String measurableTypeStr=null;
+        if("FACT".equals(measurableType)){
+            measurableTypeStr= DiscoverSpaceOperationConstant.TYPEKIND_FACT;
+        }
+        if("DIMENSION".equals(measurableType)){
+            measurableTypeStr= DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION;
+        }
+        if("RELATION".equals(measurableType)){
+            measurableTypeStr= DiscoverSpaceOperationConstant.TYPEKIND_RELATION;
+        }
+        Map<String,MeasurableTypeDataInfoVO> resultInfo=DiscoverSpaceOperationUtil.getTypeInstancesInfoOfMeasurableTypes(discoverSpaceName,measurableTypeStr,measurableTypeNames);
         return resultInfo;
     }
 
