@@ -1007,20 +1007,31 @@ public class DiscoverSpaceOperationUtil {
             for(Property currentProperty:measurableProperties){
                 PropertyVO currentPropertyVO=new PropertyVO();
                 currentMeasurableVOPropertiesList.add(currentPropertyVO);
-
                 currentPropertyVO.setPropertyType(""+currentProperty.getPropertyType());
                 currentPropertyVO.setPropertyName(currentProperty.getPropertyName());
                 if(targetMeasurable instanceof Dimension){
-                    currentPropertyVO.setPropertyAliasName(getTypePropertyAliasName(
-                            spaceName,DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION,((Dimension) targetMeasurable).getType(),currentProperty.getPropertyName()));
+                    String propertyAliasName = getTypePropertyAliasName(
+                            spaceName,DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION,((Dimension) targetMeasurable).getType(),currentProperty.getPropertyName());
+                    if(propertyAliasName==null||propertyAliasName.equals("")){
+                        propertyAliasName=getCustomPropertyAliasName(spaceName,currentProperty.getPropertyName(),currentProperty.getPropertyType().toString());
+                    }
+                    currentPropertyVO.setPropertyAliasName(propertyAliasName);
                 }
                 if(targetMeasurable instanceof Fact){
-                    currentPropertyVO.setPropertyAliasName(getTypePropertyAliasName(
-                            spaceName,DiscoverSpaceOperationConstant.TYPEKIND_FACT,((Fact) targetMeasurable).getType(),currentProperty.getPropertyName()));
+                    String propertyAliasName = getTypePropertyAliasName(
+                            spaceName,DiscoverSpaceOperationConstant.TYPEKIND_FACT,((Fact) targetMeasurable).getType(),currentProperty.getPropertyName());
+                    if(propertyAliasName==null||propertyAliasName.equals("")){
+                        propertyAliasName=getCustomPropertyAliasName(spaceName,currentProperty.getPropertyName(),currentProperty.getPropertyType().toString());
+                    }
+                    currentPropertyVO.setPropertyAliasName(propertyAliasName);
                 }
                 if(targetMeasurable instanceof Relation){
-                    currentPropertyVO.setPropertyAliasName(getTypePropertyAliasName(
-                            spaceName,DiscoverSpaceOperationConstant.TYPEKIND_RELATION,((Relation) targetMeasurable).getType(),currentProperty.getPropertyName()));
+                    String propertyAliasName = getTypePropertyAliasName(
+                            spaceName,DiscoverSpaceOperationConstant.TYPEKIND_RELATION,((Relation) targetMeasurable).getType(),currentProperty.getPropertyName());
+                    if(propertyAliasName==null||propertyAliasName.equals("")){
+                        propertyAliasName=getCustomPropertyAliasName(spaceName,currentProperty.getPropertyName(),currentProperty.getPropertyType().toString());
+                    }
+                    currentPropertyVO.setPropertyAliasName(propertyAliasName);
                 }
 
                 Object currentPropertyValue=currentProperty.getPropertyValue();
@@ -1221,18 +1232,30 @@ public class DiscoverSpaceOperationUtil {
                     currentPropertyVO.setPropertyType(""+currentProperty.getPropertyType());
                     currentPropertyVO.setPropertyName(currentProperty.getPropertyName());
                     if(targetMeasurable instanceof Dimension){
-                        currentPropertyVO.setPropertyAliasName(getTypePropertyAliasName(
-                                spaceName,DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION,((Dimension) targetMeasurable).getType(),currentProperty.getPropertyName()));
+                        String propertyAliasName = getTypePropertyAliasName(
+                                spaceName,DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION,((Dimension) targetMeasurable).getType(),currentProperty.getPropertyName());
+                        if(propertyAliasName==null||propertyAliasName.equals("")){
+                            propertyAliasName=getCustomPropertyAliasName(spaceName,currentProperty.getPropertyName(),currentProperty.getPropertyType().toString());
+                        }
+                        currentPropertyVO.setPropertyAliasName(propertyAliasName);
                         measurableTypeValueVO.setMeasurableId(((Dimension) targetMeasurable).getId());
                     }
                     if(targetMeasurable instanceof Fact){
-                        currentPropertyVO.setPropertyAliasName(getTypePropertyAliasName(
-                                spaceName,DiscoverSpaceOperationConstant.TYPEKIND_FACT,((Fact) targetMeasurable).getType(),currentProperty.getPropertyName()));
+                        String propertyAliasName = getTypePropertyAliasName(
+                                spaceName,DiscoverSpaceOperationConstant.TYPEKIND_FACT,((Fact) targetMeasurable).getType(),currentProperty.getPropertyName());
+                        if(propertyAliasName==null||propertyAliasName.equals("")){
+                            propertyAliasName=getCustomPropertyAliasName(spaceName,currentProperty.getPropertyName(),currentProperty.getPropertyType().toString());
+                        }
+                        currentPropertyVO.setPropertyAliasName(propertyAliasName);
                         measurableTypeValueVO.setMeasurableId(((Fact) targetMeasurable).getId());
                     }
                     if(targetMeasurable instanceof Relation){
-                        currentPropertyVO.setPropertyAliasName(getTypePropertyAliasName(
-                                spaceName,DiscoverSpaceOperationConstant.TYPEKIND_RELATION,((Relation) targetMeasurable).getType(),currentProperty.getPropertyName()));
+                        String propertyAliasName = getTypePropertyAliasName(
+                                spaceName,DiscoverSpaceOperationConstant.TYPEKIND_RELATION,((Relation) targetMeasurable).getType(),currentProperty.getPropertyName());
+                        if(propertyAliasName==null||propertyAliasName.equals("")){
+                            propertyAliasName=getCustomPropertyAliasName(spaceName,currentProperty.getPropertyName(),currentProperty.getPropertyType().toString());
+                        }
+                        currentPropertyVO.setPropertyAliasName(propertyAliasName);
                         measurableTypeValueVO.setMeasurableId(((Relation) targetMeasurable).getId());
                     }
 
@@ -1641,15 +1664,20 @@ public class DiscoverSpaceOperationUtil {
     // get type and property alias name logic
     public static final String TYPEKIND_AliasNameFactType="TypeKind_AliasName";
     public static final String TYPEPROPERTY_AliasNameFactType="TypeProperty_AliasName";
+    public static final String CUSTOMPROPERTY_AliasNameFactType="CustomProperty_AliasName";
     public static final String MetaConfig_PropertyName_DiscoverSpace="discoverSpace";
     public static final String MetaConfig_PropertyName_TypeKind="typeKind";
     public static final String MetaConfig_PropertyName_TypeName="typeName";
     public static final String MetaConfig_PropertyName_TypeAliasName="typeAliasName";
     public static final String MetaConfig_PropertyName_TypePropertyName="typePropertyName";
     public static final String MetaConfig_PropertyName_TypePropertyAliasName="typePropertyAliasName";
+    public static final String MetaConfig_PropertyName_CustomPropertyName="customPropertyName";
+    public static final String MetaConfig_PropertyName_CustomPropertyType="customPropertyType";
+    public static final String MetaConfig_PropertyName_CustomPropertyAliasName="customPropertyAliasName";
 
     private static HashMap<String,String> TYPEKIND_AliasNameMap=new HashMap<>();
     private static HashMap<String,String> TypeProperty_AliasNameMap=new HashMap<>();
+    private static HashMap<String,String> CustomProperty_AliasNameMap=new HashMap<>();
 
     private static String getTypeKindAliasName(String spaceName,String typeKind,String typeName){
         String typeKindRecordKey=spaceName+"_"+typeKind+"_"+typeName;
@@ -1669,9 +1697,19 @@ public class DiscoverSpaceOperationUtil {
         }
     }
 
+    public static String getCustomPropertyAliasName(String spaceName,String customPropertyName,String customPropertyType) {
+        String propertyRecordKey=spaceName+"_"+customPropertyName+"_"+customPropertyType;
+        if(CustomProperty_AliasNameMap.get(propertyRecordKey)!=null){
+            return CustomProperty_AliasNameMap.get(propertyRecordKey);
+        }else{
+            return "";
+        }
+    }
+
     public static void clearItemAliasNameCache(){
         TYPEKIND_AliasNameMap.clear();
         TypeProperty_AliasNameMap.clear();
+        CustomProperty_AliasNameMap.clear();
     }
 
     public static void refreshItemAliasNameCache(){
@@ -1765,6 +1803,54 @@ public class DiscoverSpaceOperationUtil {
                                 TypeProperty_AliasNameMap.remove(propertyRecordKey);
                             }
                             TypeProperty_AliasNameMap.put(propertyRecordKey,typePropertyAliasName);
+                        }
+                    }
+                }
+            }
+
+            if(metaConfigSpace.hasFactType(CUSTOMPROPERTY_AliasNameFactType)){
+                ExploreParameters typeKindRecordEP = new ExploreParameters();
+                typeKindRecordEP.setType(CUSTOMPROPERTY_AliasNameFactType);
+                typeKindRecordEP.setResultNumber(100000);
+                InformationExplorer ie = metaConfigSpace.getInformationExplorer();
+                List<Fact> typePropertyAliasRecordFact = ie.discoverFacts(typeKindRecordEP);
+                if(typePropertyAliasRecordFact!=null) {
+                    String spaceName=null;
+                    String customPropertyName=null;
+                    String customPropertyType=null;
+                    String customPropertyAliasName=null;
+                    for(Fact currentFact:typePropertyAliasRecordFact){
+                        Property _DiscoverSpace=currentFact.getProperty(MetaConfig_PropertyName_DiscoverSpace);
+                        if(_DiscoverSpace!=null){
+                            spaceName=_DiscoverSpace.getPropertyValue().toString();
+                        }else{
+                            spaceName=null;
+                        }
+                        Property _CustomPropertyName=currentFact.getProperty(MetaConfig_PropertyName_CustomPropertyName);
+                        if(_CustomPropertyName!=null){
+                            customPropertyName=_CustomPropertyName.getPropertyValue().toString();
+                        }else{
+                            customPropertyName=null;
+                        }
+                        Property _CustomPropertyType=currentFact.getProperty(MetaConfig_PropertyName_CustomPropertyType);
+                        if(_CustomPropertyType!=null){
+                            customPropertyType=_CustomPropertyType.getPropertyValue().toString();
+                        }else{
+                            customPropertyType=null;
+                        }
+                        Property _CustomPropertyAliasName=currentFact.getProperty(MetaConfig_PropertyName_CustomPropertyAliasName);
+                        if(_CustomPropertyAliasName!=null){
+                            customPropertyAliasName=_CustomPropertyAliasName.getPropertyValue().toString();
+                        }else{
+                            customPropertyAliasName=null;
+                        }
+                        if(_CustomPropertyAliasName!=null){
+                            String propertyRecordKey=spaceName+"_"+customPropertyName+"_"+customPropertyType;
+                            String typePropertyAliasName=customPropertyAliasName;
+                            if(CustomProperty_AliasNameMap.containsKey(propertyRecordKey)) {
+                                CustomProperty_AliasNameMap.remove(propertyRecordKey);
+                            }
+                            CustomProperty_AliasNameMap.put(propertyRecordKey,typePropertyAliasName);
                         }
                     }
                 }
