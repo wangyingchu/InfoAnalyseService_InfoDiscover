@@ -34,6 +34,7 @@ function getMeasurablePropertyNumberValue(measurableValue,propertyName){
             return Number(currentPropertyValue.propertyValue);
         }
     }
+    return 0;
 }
 
 function getMeasurablePropertyOriginalValue(measurableValue,propertyName){
@@ -45,6 +46,7 @@ function getMeasurablePropertyOriginalValue(measurableValue,propertyName){
             return currentPropertyValue.propertyValue;
         }
     }
+    return "";
 }
 
 /* this logic has a defect, all English will changed to lowercase
