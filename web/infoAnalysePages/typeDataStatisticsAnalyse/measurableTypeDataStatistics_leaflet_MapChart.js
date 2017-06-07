@@ -18,19 +18,24 @@ $(document).ready(function() {
     var querySQL=getQueryString("querySQL");
 
     var restBaseURL;
+    var measurableTypeDisplayName="";
     if(measurableType=="FACT"){
-        restBaseURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeDataStatisticsAnalyseService/factTypeDataList/";
+        restBaseURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeDataStatisticsAnalyseService/factTypePropertiesDataList/";
+        measurableTypeDisplayName="\u4e8b\u5b9e\u6570\u636e";
     }
     if(measurableType=="DIMENSION"){
-        restBaseURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeDataStatisticsAnalyseService/dimensionTypeDataList/";
+        restBaseURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeDataStatisticsAnalyseService/dimensionTypePropertiesDataList/";
+        measurableTypeDisplayName="\u7ef4\u5ea6\u6570\u636e";
     }
     if(measurableType=="RELATION"){
-        restBaseURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeDataStatisticsAnalyseService/relationTypeDataList/";
+        restBaseURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeDataStatisticsAnalyseService/relationTypePropertiesDataList/";
+        measurableTypeDisplayName="\u5173\u7cfb\u6570\u636e";
     }
     if(!restBaseURL){
         return;
     }
-    var restURL=restBaseURL+discoverSpaceName+"/"+measurableName+"/";
+    var propertiesList=latProperty+","+lngProperty+","+titleProperty+","+descProperty;
+    var restURL=restBaseURL+discoverSpaceName+"/"+measurableName+"/"+propertiesList+"/";
 
     if(graphHeight){
         document.getElementById('mapid').style.height=""+(Number(graphHeight)-40)+"px";
@@ -45,8 +50,12 @@ $(document).ready(function() {
         };
     }
     $.ajax(restConfig).then(function(data) {
+        var measurableDisplayName=measurableName;
+        if(data.measurableAliasName){
+            measurableDisplayName=data.measurableAliasName;
+        }
         var chartDataSet=data.measurableValues;
-        document.getElementById('graphTitle').innerHTML=discoverSpaceName+" "+measurableType+" "+measurableName;
+        document.getElementById('graphTitle').innerHTML=discoverSpaceName+" "+measurableTypeDisplayName+": "+measurableDisplayName;
         document.getElementById('dataSizeText').innerHTML=chartDataSet.length;
         if(chartDataSet.length==0){
             return;

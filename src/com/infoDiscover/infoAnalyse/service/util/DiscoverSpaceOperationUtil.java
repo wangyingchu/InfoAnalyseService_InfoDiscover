@@ -656,6 +656,51 @@ public class DiscoverSpaceOperationUtil {
         return currentMeasurableVO;
     }
 
+    private static MeasurableVO getMeasurableVO(String spaceName,Measurable typeMeasurable,String[] targetProperties,Map<String,String> propertiesAliasNameMap){
+        MeasurableVO currentMeasurableVO=new MeasurableVO();
+        List<Property> currentMeasurableProperties=new ArrayList<>();
+        if(targetProperties!=null){
+            for(String currentTargetPropertyName:targetProperties){
+                Property currentProperty=typeMeasurable.getProperty(currentTargetPropertyName);
+                if(currentProperty!=null){
+                    currentMeasurableProperties.add(currentProperty);
+                    if(propertiesAliasNameMap!=null) {
+                        String currentPropertyAliasName = propertiesAliasNameMap.get(currentTargetPropertyName);
+                        if(currentPropertyAliasName==null){
+                            String propertyAliasName=null;
+                            if(typeMeasurable instanceof Dimension){
+                                propertyAliasName = getTypePropertyAliasName(
+                                        spaceName,DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION,((Dimension) typeMeasurable).getType(),currentProperty.getPropertyName());
+                                if(propertyAliasName==null||propertyAliasName.equals("")){
+                                    propertyAliasName=getCustomPropertyAliasName(spaceName,currentProperty.getPropertyName(),currentProperty.getPropertyType().toString());
+                                }
+                            }
+                            if(typeMeasurable instanceof Fact){
+                                propertyAliasName = getTypePropertyAliasName(
+                                        spaceName,DiscoverSpaceOperationConstant.TYPEKIND_FACT,((Fact) typeMeasurable).getType(),currentProperty.getPropertyName());
+                                if(propertyAliasName==null||propertyAliasName.equals("")){
+                                    propertyAliasName=getCustomPropertyAliasName(spaceName,currentProperty.getPropertyName(),currentProperty.getPropertyType().toString());
+                                }
+                            }
+                            if(typeMeasurable instanceof Relation){
+                                propertyAliasName = getTypePropertyAliasName(
+                                        spaceName,DiscoverSpaceOperationConstant.TYPEKIND_RELATION,((Relation) typeMeasurable).getType(),currentProperty.getPropertyName());
+                                if(propertyAliasName==null||propertyAliasName.equals("")){
+                                    propertyAliasName=getCustomPropertyAliasName(spaceName,currentProperty.getPropertyName(),currentProperty.getPropertyType().toString());
+                                }
+                            }
+                            if(propertyAliasName!=null&&!propertyAliasName.equals("")) {
+                                propertiesAliasNameMap.put(currentTargetPropertyName, propertyAliasName);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        currentMeasurableVO.setMeasurableProperties(loadMeasurablePropertyVOList(spaceName,typeMeasurable,currentMeasurableProperties));
+        return currentMeasurableVO;
+    }
+
     public static MeasurableQueryResultSetVO queryDimensionTypeData(String spaceName,String dimensionTypeName) {
         InfoDiscoverSpace targetSpace=null;
         try {
@@ -980,6 +1025,186 @@ public class DiscoverSpaceOperationUtil {
                 if(resultMeasurableList!=null){
                     for(Measurable currentMeasurable:resultMeasurableList){
                         MeasurableVO measurableVO =getMeasurableVO(spaceName,currentMeasurable);
+                        resultMeasurableVOList.add(measurableVO);
+                    }
+                }
+                measurableQueryResultSetVO.setMeasurableValues(resultMeasurableVOList);
+                measurableQueryResultSetVO.setQuerySQL(querySQL);
+                return measurableQueryResultSetVO;
+            }
+        } catch (InfoDiscoveryEngineDataMartException e) {
+            e.printStackTrace();
+        } catch (InfoDiscoveryEngineInfoExploreException e) {
+            e.printStackTrace();
+        } catch (InfoDiscoveryEngineRuntimeException e) {
+            e.printStackTrace();
+        } finally {
+            if(targetSpace!=null){
+                targetSpace.closeSpace();
+            }
+        }
+        return null;
+    }
+
+    public static MeasurablePropertiesQueryResultSetVO queryFactPropertiesDataByQuerySQL(String spaceName,String factTypeName,String querySQL,String propertiesString) {
+        String[] targetPropertiesArray=propertiesString.split(",");
+        if(targetPropertiesArray==null){
+            return null;
+        }
+        InfoDiscoverSpace targetSpace=null;
+        try {
+            targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
+            boolean hasTargetType=targetSpace.hasFactType(factTypeName);
+            if(!hasTargetType){
+                refreshTypeDefinitionInfo(targetSpace);
+            }
+            hasTargetType=targetSpace.hasFactType(factTypeName);
+            if(!hasTargetType){
+                return null;
+            }else{
+                MeasurablePropertiesQueryResultSetVO measurableQueryResultSetVO=new MeasurablePropertiesQueryResultSetVO();
+                measurableQueryResultSetVO.setCurrentPage(1);
+                measurableQueryResultSetVO.setPageSize(-1);
+                measurableQueryResultSetVO.setDiscoverSpaceName(spaceName);
+                measurableQueryResultSetVO.setMeasurableName(factTypeName);
+                String aliasName=getTypeKindAliasName(spaceName,DiscoverSpaceOperationConstant.TYPEKIND_FACT,factTypeName);
+                if(aliasName!=null&&!aliasName.equals("")){
+                    measurableQueryResultSetVO.setMeasurableAliasName(aliasName);
+                }
+                measurableQueryResultSetVO.setMeasurableType(DiscoverSpaceOperationConstant.TYPEKIND_FACT);
+
+                FactType targetFactType=targetSpace.getFactType(factTypeName);
+                measurableQueryResultSetVO.setMeasurableRecordCount(targetFactType.countContainedFacts());
+
+                Map<String,String> propertiesAliasNameMap=new HashMap<>();
+                measurableQueryResultSetVO.setPropertiesAliasNameMap(propertiesAliasNameMap);
+
+                InformationExplorer ie=targetSpace.getInformationExplorer();
+                List<Measurable> resultMeasurableList= ie.discoverMeasurablesByQuerySQL(InformationType.FACT,factTypeName,querySQL);
+                List<MeasurableVO> resultMeasurableVOList=new ArrayList<>();
+                if(resultMeasurableList!=null){
+                    for(Measurable currentMeasurable:resultMeasurableList){
+                        MeasurableVO measurableVO =getMeasurableVO(spaceName,currentMeasurable,targetPropertiesArray,propertiesAliasNameMap);
+                        resultMeasurableVOList.add(measurableVO);
+                    }
+                }
+                measurableQueryResultSetVO.setMeasurableValues(resultMeasurableVOList);
+                measurableQueryResultSetVO.setQuerySQL(querySQL);
+                return measurableQueryResultSetVO;
+            }
+        } catch (InfoDiscoveryEngineDataMartException e) {
+            e.printStackTrace();
+        } catch (InfoDiscoveryEngineInfoExploreException e) {
+            e.printStackTrace();
+        } catch (InfoDiscoveryEngineRuntimeException e) {
+            e.printStackTrace();
+        } finally {
+            if(targetSpace!=null){
+                targetSpace.closeSpace();
+            }
+        }
+        return null;
+    }
+
+    public static MeasurablePropertiesQueryResultSetVO queryDimensionPropertiesDataByQuerySQL(String spaceName,String dimensionTypeName,String querySQL,String propertiesString) {
+        String[] targetPropertiesArray=propertiesString.split(",");
+        if(targetPropertiesArray==null){
+            return null;
+        }
+        InfoDiscoverSpace targetSpace=null;
+        try {
+            targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
+            boolean hasTargetType=targetSpace.hasDimensionType(dimensionTypeName);
+            if(!hasTargetType){
+                refreshTypeDefinitionInfo(targetSpace);
+            }
+            hasTargetType=targetSpace.hasDimensionType(dimensionTypeName);
+            if(!hasTargetType){
+                return null;
+            }else{
+                MeasurablePropertiesQueryResultSetVO measurableQueryResultSetVO=new MeasurablePropertiesQueryResultSetVO();
+                measurableQueryResultSetVO.setCurrentPage(1);
+                measurableQueryResultSetVO.setPageSize(-1);
+                measurableQueryResultSetVO.setDiscoverSpaceName(spaceName);
+                measurableQueryResultSetVO.setMeasurableName(dimensionTypeName);
+                String aliasName=getTypeKindAliasName(spaceName,DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION,dimensionTypeName);
+                if(aliasName!=null&&!aliasName.equals("")){
+                    measurableQueryResultSetVO.setMeasurableAliasName(aliasName);
+                }
+                measurableQueryResultSetVO.setMeasurableType(DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION);
+
+                DimensionType targetDimensionType=targetSpace.getDimensionType(dimensionTypeName);
+                measurableQueryResultSetVO.setMeasurableRecordCount(targetDimensionType.countContainedDimensions(true));
+
+                Map<String,String> propertiesAliasNameMap=new HashMap<>();
+                measurableQueryResultSetVO.setPropertiesAliasNameMap(propertiesAliasNameMap);
+
+                InformationExplorer ie=targetSpace.getInformationExplorer();
+                List<Measurable> resultMeasurableList= ie.discoverMeasurablesByQuerySQL(InformationType.DIMENSION,dimensionTypeName,querySQL);
+                List<MeasurableVO> resultMeasurableVOList=new ArrayList<>();
+                if(resultMeasurableList!=null){
+                    for(Measurable currentMeasurable:resultMeasurableList){
+                        MeasurableVO measurableVO =getMeasurableVO(spaceName,currentMeasurable,targetPropertiesArray,propertiesAliasNameMap);
+                        resultMeasurableVOList.add(measurableVO);
+                    }
+                }
+                measurableQueryResultSetVO.setMeasurableValues(resultMeasurableVOList);
+                measurableQueryResultSetVO.setQuerySQL(querySQL);
+                return measurableQueryResultSetVO;
+            }
+        } catch (InfoDiscoveryEngineDataMartException e) {
+            e.printStackTrace();
+        } catch (InfoDiscoveryEngineInfoExploreException e) {
+            e.printStackTrace();
+        } catch (InfoDiscoveryEngineRuntimeException e) {
+            e.printStackTrace();
+        } finally {
+            if(targetSpace!=null){
+                targetSpace.closeSpace();
+            }
+        }
+        return null;
+    }
+
+    public static MeasurablePropertiesQueryResultSetVO queryRelationPropertiesDataByQuerySQL(String spaceName,String relationTypeName,String querySQL,String propertiesString) {
+        String[] targetPropertiesArray=propertiesString.split(",");
+        if(targetPropertiesArray==null){
+            return null;
+        }
+        InfoDiscoverSpace targetSpace=null;
+        try {
+            targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
+            boolean hasTargetType=targetSpace.hasRelationType(relationTypeName);
+            if(!hasTargetType){
+                refreshTypeDefinitionInfo(targetSpace);
+            }
+            hasTargetType=targetSpace.hasRelationType(relationTypeName);
+            if(!hasTargetType){
+                return null;
+            }else{
+                MeasurablePropertiesQueryResultSetVO measurableQueryResultSetVO=new MeasurablePropertiesQueryResultSetVO();
+                measurableQueryResultSetVO.setCurrentPage(1);
+                measurableQueryResultSetVO.setPageSize(-1);
+                measurableQueryResultSetVO.setDiscoverSpaceName(spaceName);
+                measurableQueryResultSetVO.setMeasurableName(relationTypeName);
+                String aliasName=getTypeKindAliasName(spaceName,DiscoverSpaceOperationConstant.TYPEKIND_RELATION,relationTypeName);
+                if(aliasName!=null&&!aliasName.equals("")){
+                    measurableQueryResultSetVO.setMeasurableAliasName(aliasName);
+                }
+                measurableQueryResultSetVO.setMeasurableType(DiscoverSpaceOperationConstant.TYPEKIND_RELATION);
+
+                RelationType targetRelationType=targetSpace.getRelationType(relationTypeName);
+                measurableQueryResultSetVO.setMeasurableRecordCount(targetRelationType.countContainedRelations(true));
+
+                Map<String,String> propertiesAliasNameMap=new HashMap<>();
+                measurableQueryResultSetVO.setPropertiesAliasNameMap(propertiesAliasNameMap);
+
+                InformationExplorer ie=targetSpace.getInformationExplorer();
+                List<Measurable> resultMeasurableList= ie.discoverMeasurablesByQuerySQL(InformationType.RELATION,relationTypeName,querySQL);
+                List<MeasurableVO> resultMeasurableVOList=new ArrayList<>();
+                if(resultMeasurableList!=null){
+                    for(Measurable currentMeasurable:resultMeasurableList){
+                        MeasurableVO measurableVO =getMeasurableVO(spaceName,currentMeasurable,targetPropertiesArray,propertiesAliasNameMap);
                         resultMeasurableVOList.add(measurableVO);
                     }
                 }
@@ -1493,6 +1718,47 @@ public class DiscoverSpaceOperationUtil {
         return null;
     }
 
+    public static MeasurablePropertiesQueryBriefResultSetVO generateFactTypePropertiesBriefDataByQuerySQL(String spaceName, String factTypeName, String properties,String querySQL) {
+        MeasurablePropertiesQueryBriefResultSetVO measurablePropertiesQueryBriefResultSetVO=new MeasurablePropertiesQueryBriefResultSetVO();
+        measurablePropertiesQueryBriefResultSetVO.setDiscoverSpaceName(spaceName);
+        measurablePropertiesQueryBriefResultSetVO.setMeasurableName(factTypeName);
+        String aliasName=getTypeKindAliasName(spaceName,DiscoverSpaceOperationConstant.TYPEKIND_FACT,factTypeName);
+        if(aliasName!=null&&!aliasName.equals("")){
+            measurablePropertiesQueryBriefResultSetVO.setMeasurableAliasName(aliasName);
+        }
+        Map<String,String> propertiesAliasNameMap=new HashMap<>();
+        measurablePropertiesQueryBriefResultSetVO.setPropertiesAliasNameMap(propertiesAliasNameMap);
+
+        InfoDiscoverSpace targetSpace=null;
+        try {
+            targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
+            boolean hasTargetType=targetSpace.hasFactType(factTypeName);
+            if(!hasTargetType){
+                refreshTypeDefinitionInfo(targetSpace);
+            }
+            hasTargetType=targetSpace.hasFactType(factTypeName);
+            if(!hasTargetType){
+                return null;
+            }else{
+                InformationExplorer ie=targetSpace.getInformationExplorer();
+                List<Measurable> resultMeasurableList= ie.discoverMeasurablesByQuerySQL(InformationType.FACT,factTypeName,querySQL);
+                List<Map<String,String>> propertyRowData= generateMeasurableTypePropertiesJSON(spaceName,resultMeasurableList,properties,propertiesAliasNameMap);
+                measurablePropertiesQueryBriefResultSetVO.setPropertyRowData(propertyRowData);
+            }
+        } catch (InfoDiscoveryEngineDataMartException e) {
+            e.printStackTrace();
+        } catch (InfoDiscoveryEngineInfoExploreException e) {
+            e.printStackTrace();
+        } catch (InfoDiscoveryEngineRuntimeException e) {
+            e.printStackTrace();
+        } finally {
+            if(targetSpace!=null){
+                targetSpace.closeSpace();
+            }
+        }
+        return measurablePropertiesQueryBriefResultSetVO;
+    }
+
     public static List<Map<String,String>> generateDimensionTypePropertiesJSON(String spaceName,String dimensionTypeName,String properties) {
         InfoDiscoverSpace targetSpace=null;
         try {
@@ -1556,6 +1822,47 @@ public class DiscoverSpaceOperationUtil {
             }
         }
         return null;
+    }
+
+    public static MeasurablePropertiesQueryBriefResultSetVO generateDimensionTypePropertiesBriefJSONByQuerySQL(String spaceName,String dimensionTypeName,String properties,String querySQL) {
+        MeasurablePropertiesQueryBriefResultSetVO measurablePropertiesQueryBriefResultSetVO=new MeasurablePropertiesQueryBriefResultSetVO();
+        measurablePropertiesQueryBriefResultSetVO.setDiscoverSpaceName(spaceName);
+        measurablePropertiesQueryBriefResultSetVO.setMeasurableName(dimensionTypeName);
+        String aliasName=getTypeKindAliasName(spaceName,DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION,dimensionTypeName);
+        if(aliasName!=null&&!aliasName.equals("")){
+            measurablePropertiesQueryBriefResultSetVO.setMeasurableAliasName(aliasName);
+        }
+        Map<String,String> propertiesAliasNameMap=new HashMap<>();
+        measurablePropertiesQueryBriefResultSetVO.setPropertiesAliasNameMap(propertiesAliasNameMap);
+
+        InfoDiscoverSpace targetSpace=null;
+        try {
+            targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
+            boolean hasTargetType=targetSpace.hasDimensionType(dimensionTypeName);
+            if(!hasTargetType){
+                refreshTypeDefinitionInfo(targetSpace);
+            }
+            hasTargetType=targetSpace.hasDimensionType(dimensionTypeName);
+            if(!hasTargetType){
+                return null;
+            }else{
+                InformationExplorer ie=targetSpace.getInformationExplorer();
+                List<Measurable> resultMeasurableList= ie.discoverMeasurablesByQuerySQL(InformationType.DIMENSION,dimensionTypeName,querySQL);
+                List<Map<String,String>> propertyRowData= generateMeasurableTypePropertiesJSON(spaceName,resultMeasurableList,properties,propertiesAliasNameMap);
+                measurablePropertiesQueryBriefResultSetVO.setPropertyRowData(propertyRowData);
+            }
+        } catch (InfoDiscoveryEngineDataMartException e) {
+            e.printStackTrace();
+        } catch (InfoDiscoveryEngineInfoExploreException e) {
+            e.printStackTrace();
+        } catch (InfoDiscoveryEngineRuntimeException e) {
+            e.printStackTrace();
+        } finally {
+            if(targetSpace!=null){
+                targetSpace.closeSpace();
+            }
+        }
+        return measurablePropertiesQueryBriefResultSetVO;
     }
 
     public static List<Map<String,String>> generateRelationTypePropertiesJSON(String spaceName,String relationTypeName,String properties) {
@@ -1623,6 +1930,47 @@ public class DiscoverSpaceOperationUtil {
         return null;
     }
 
+    public static MeasurablePropertiesQueryBriefResultSetVO generateRelationTypePropertiesBriefJSONByQuerySQL(String spaceName,String relationTypeName,String properties,String querySQL) {
+        MeasurablePropertiesQueryBriefResultSetVO measurablePropertiesQueryBriefResultSetVO=new MeasurablePropertiesQueryBriefResultSetVO();
+        measurablePropertiesQueryBriefResultSetVO.setDiscoverSpaceName(spaceName);
+        measurablePropertiesQueryBriefResultSetVO.setMeasurableName(relationTypeName);
+        String aliasName=getTypeKindAliasName(spaceName,DiscoverSpaceOperationConstant.TYPEKIND_RELATION,relationTypeName);
+        if(aliasName!=null&&!aliasName.equals("")){
+            measurablePropertiesQueryBriefResultSetVO.setMeasurableAliasName(aliasName);
+        }
+        Map<String,String> propertiesAliasNameMap=new HashMap<>();
+        measurablePropertiesQueryBriefResultSetVO.setPropertiesAliasNameMap(propertiesAliasNameMap);
+
+        InfoDiscoverSpace targetSpace=null;
+        try {
+            targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
+            boolean hasTargetType=targetSpace.hasRelationType(relationTypeName);
+            if(!hasTargetType){
+                refreshTypeDefinitionInfo(targetSpace);
+            }
+            hasTargetType=targetSpace.hasRelationType(relationTypeName);
+            if(!hasTargetType){
+                return null;
+            }else{
+                InformationExplorer ie=targetSpace.getInformationExplorer();
+                List<Measurable> resultMeasurableList= ie.discoverMeasurablesByQuerySQL(InformationType.RELATION,relationTypeName,querySQL);
+                List<Map<String,String>> propertyRowData= generateMeasurableTypePropertiesJSON(spaceName,resultMeasurableList,properties,propertiesAliasNameMap);
+                measurablePropertiesQueryBriefResultSetVO.setPropertyRowData(propertyRowData);
+            }
+        } catch (InfoDiscoveryEngineDataMartException e) {
+            e.printStackTrace();
+        } catch (InfoDiscoveryEngineInfoExploreException e) {
+            e.printStackTrace();
+        } catch (InfoDiscoveryEngineRuntimeException e) {
+            e.printStackTrace();
+        } finally {
+            if(targetSpace!=null){
+                targetSpace.closeSpace();
+            }
+        }
+        return measurablePropertiesQueryBriefResultSetVO;
+    }
+
     private static List<Map<String,String>> generateMeasurableTypePropertiesJSON(List<? extends Measurable> resultMeasurableList,String properties){
         String[] propertyNameList=properties.split(",");
         if(propertyNameList.length==0){
@@ -1655,6 +2003,76 @@ public class DiscoverSpaceOperationUtil {
                             valueMap.put(currentPropertyName,currentProperty.getPropertyValue().toString());
                         }
                     }
+                }
+            }
+        }
+        return resultDataList;
+    }
+
+    private static List<Map<String,String>> generateMeasurableTypePropertiesJSON(String spaceName,List<? extends Measurable> resultMeasurableList,String properties,Map<String,String> propertiesAliasNameMap){
+        String[] propertyNameList=properties.split(",");
+        if(propertyNameList.length==0){
+            return null;
+        }
+        String titleLineValue=null;
+        for(int i=0;i<propertyNameList.length;i++){
+            String currentProperty=propertyNameList[i];
+            if(i!=0){
+                titleLineValue=titleLineValue+","+currentProperty;
+            }else{
+                titleLineValue=currentProperty;
+            }
+        }
+        List<Map<String,String>> resultDataList=new ArrayList<>();
+        if(resultMeasurableList!=null){
+            for(Measurable currentMeasurable:resultMeasurableList){
+                Map<String,String> valueMap=new HashMap<>();
+                resultDataList.add(valueMap);
+                for(int i=0;i<propertyNameList.length;i++){
+                    String currentPropertyName=propertyNameList[i];
+                    Property currentProperty=currentMeasurable.getProperty(currentPropertyName);
+                    if(currentProperty==null){
+                        valueMap.put(currentPropertyName,null);
+                    }else {
+                        if (currentProperty.getPropertyType().equals(PropertyType.DATE)) {
+                            Date propertyValue = (Date) currentProperty.getPropertyValue();
+                            valueMap.put(currentPropertyName,"" + propertyValue.getTime());
+                        } else {
+                            valueMap.put(currentPropertyName,currentProperty.getPropertyValue().toString());
+                        }
+                    }
+
+                    if(propertiesAliasNameMap!=null) {
+                        String currentPropertyAliasName = propertiesAliasNameMap.get(currentPropertyName);
+                        if(currentPropertyAliasName==null){
+                            String propertyAliasName=null;
+                            if(currentMeasurable instanceof Dimension){
+                                propertyAliasName = getTypePropertyAliasName(
+                                        spaceName,DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION,((Dimension) currentMeasurable).getType(),currentProperty.getPropertyName());
+                                if(propertyAliasName==null||propertyAliasName.equals("")){
+                                    propertyAliasName=getCustomPropertyAliasName(spaceName,currentProperty.getPropertyName(),currentProperty.getPropertyType().toString());
+                                }
+                            }
+                            if(currentMeasurable instanceof Fact){
+                                propertyAliasName = getTypePropertyAliasName(
+                                        spaceName,DiscoverSpaceOperationConstant.TYPEKIND_FACT,((Fact) currentMeasurable).getType(),currentProperty.getPropertyName());
+                                if(propertyAliasName==null||propertyAliasName.equals("")){
+                                    propertyAliasName=getCustomPropertyAliasName(spaceName,currentProperty.getPropertyName(),currentProperty.getPropertyType().toString());
+                                }
+                            }
+                            if(currentMeasurable instanceof Relation){
+                                propertyAliasName = getTypePropertyAliasName(
+                                        spaceName,DiscoverSpaceOperationConstant.TYPEKIND_RELATION,((Relation) currentMeasurable).getType(),currentProperty.getPropertyName());
+                                if(propertyAliasName==null||propertyAliasName.equals("")){
+                                    propertyAliasName=getCustomPropertyAliasName(spaceName,currentProperty.getPropertyName(),currentProperty.getPropertyType().toString());
+                                }
+                            }
+                            if(propertyAliasName!=null&&!propertyAliasName.equals("")) {
+                                propertiesAliasNameMap.put(currentPropertyName, propertyAliasName);
+                            }
+                        }
+                    }
+
                 }
             }
         }

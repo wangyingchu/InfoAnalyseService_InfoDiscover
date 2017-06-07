@@ -22,14 +22,18 @@ $(document).ready(function() {
     var querySQL=getQueryString("querySQL");
 
     var restBaseURL;
+    var measurableTypeDisplayName="";
     if(measurableType=="FACT"){
-        restBaseURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeDataStatisticsAnalyseService/factTypeDataList/";
+        restBaseURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeDataStatisticsAnalyseService/factTypePropertiesDataList/";
+        measurableTypeDisplayName="事实数据";
     }
     if(measurableType=="DIMENSION"){
-        restBaseURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeDataStatisticsAnalyseService/dimensionTypeDataList/";
+        restBaseURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeDataStatisticsAnalyseService/dimensionTypePropertiesDataList/";
+        measurableTypeDisplayName="维度数据";
     }
     if(measurableType=="RELATION"){
-        restBaseURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeDataStatisticsAnalyseService/relationTypeDataList/";
+        restBaseURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeDataStatisticsAnalyseService/relationTypePropertiesDataList/";
+        measurableTypeDisplayName="关系数据";
     }
     if(!restBaseURL){
         return;
@@ -37,7 +41,8 @@ $(document).ready(function() {
     if(graphHeight){
         document.getElementById('container').style.height=""+graphHeight+"px";
     }
-    var restURL=restBaseURL+discoverSpaceName+"/"+measurableName+"/";
+    var propertiesList=scatterProperty+","+xAxisProperty+","+yAxisProperty;
+    var restURL=restBaseURL+discoverSpaceName+"/"+measurableName+"/"+propertiesList+"/";
 
     var restConfig={
         url: restURL
@@ -49,6 +54,22 @@ $(document).ready(function() {
         };
     }
     $.ajax(restConfig).then(function(data) {
+        var propertyAliasNamesMap=data.propertiesAliasNameMap;
+        var xAxisPropertyDisplayName=xAxisProperty;
+        var yAxisPropertyDisplayName=yAxisProperty;
+        var scatterPropertyDisplayName=scatterProperty;
+        if(propertyAliasNamesMap){
+            if(propertyAliasNamesMap[xAxisProperty]){
+                xAxisPropertyDisplayName=propertyAliasNamesMap[xAxisProperty];
+            }
+            if(propertyAliasNamesMap[yAxisProperty]){
+                yAxisPropertyDisplayName=propertyAliasNamesMap[yAxisProperty];
+            }
+            if(propertyAliasNamesMap[scatterProperty]){
+                scatterPropertyDisplayName=propertyAliasNamesMap[scatterProperty];
+            }
+        }
+
         var chartDataSet=data.measurableValues;
         var dataSeries= [];
         var scatterPropertiesValueArray= scatterPropertyValues.split(",");
@@ -75,13 +96,18 @@ $(document).ready(function() {
             }
         }
 
+        var measurableDisplayName=measurableName;
+        if(data.measurableAliasName){
+            measurableDisplayName=data.measurableAliasName;
+        }
+
         var chartConfig={
             chart: {
                 type: 'scatter',
                 zoomType: 'xy'
             },
             title: {
-                text: discoverSpaceName+" "+measurableType+" "+measurableName
+                text: discoverSpaceName+" "+measurableTypeDisplayName+": "+measurableDisplayName
             },
             subtitle: {
                 text: "数据总量:" +chartDataSet.length
@@ -89,7 +115,7 @@ $(document).ready(function() {
             xAxis: {
                 title: {
                     enabled: true,
-                    text: xAxisProperty+" (x)"
+                    text: xAxisPropertyDisplayName+" (x)"
                 },
                 startOnTick: true,
                 endOnTick: true,
@@ -97,7 +123,7 @@ $(document).ready(function() {
             },
             yAxis: {
                 title: {
-                    text: yAxisProperty+" (y)"
+                    text: yAxisPropertyDisplayName+" (y)"
                 }
             },
             legend: {
@@ -130,7 +156,7 @@ $(document).ready(function() {
                     },
                     tooltip: {
                         headerFormat: '<b>{series.name}</b><br>',
-                        pointFormat: '<b>'+xAxisProperty+'(x):</b> {point.x}, <br><b>'+yAxisProperty+' (y)</b>: {point.y}'
+                        pointFormat: '<b>'+xAxisPropertyDisplayName+'(x):</b> {point.x}, <br><b>'+yAxisPropertyDisplayName+' (y)</b>: {point.y}'
                     }
                 }
             },
@@ -152,7 +178,7 @@ $(document).ready(function() {
                     style: {
                         fontStyle: 'italic'
                     },
-                    text: xAxisProperty +'='+Number(xRulerValue)
+                    text: xAxisPropertyDisplayName +'='+Number(xRulerValue)
                 },
                 zIndex: 3
             }];
@@ -169,7 +195,7 @@ $(document).ready(function() {
                     style: {
                         fontStyle: 'italic'
                     },
-                    text: yAxisProperty +'='+Number(yRulerValue),
+                    text: yAxisPropertyDisplayName +'='+Number(yRulerValue),
                     x: -10
                 },
                 zIndex: 3

@@ -21,22 +21,27 @@ $(document).ready(function() {
     var querySQL=getQueryString("querySQL");
 
     var restBaseURL;
+    var measurableTypeDisplayName="";
     if(measurableType=="FACT"){
-        restBaseURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeDataStatisticsAnalyseService/factTypeDataList/";
+        restBaseURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeDataStatisticsAnalyseService/factTypePropertiesDataList/";
+        measurableTypeDisplayName="事实数据";
     }
     if(measurableType=="DIMENSION"){
-        restBaseURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeDataStatisticsAnalyseService/dimensionTypeDataList/";
+        restBaseURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeDataStatisticsAnalyseService/dimensionTypePropertiesDataList/";
+        measurableTypeDisplayName="维度数据";
     }
     if(measurableType=="RELATION"){
-        restBaseURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeDataStatisticsAnalyseService/relationTypeDataList/";
+        restBaseURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeDataStatisticsAnalyseService/relationTypePropertiesDataList/";
+        measurableTypeDisplayName="关系数据";
     }
     if(!restBaseURL){
         return;
     }
     if(graphHeight){
         document.getElementById('container').style.height=""+graphHeight+"px";
-    }    
-    var restURL=restBaseURL+discoverSpaceName+"/"+measurableName+"/";
+    }
+    var propertiesList=zAxisProperty+","+xAxisProperty+","+yAxisProperty;
+    var restURL=restBaseURL+discoverSpaceName+"/"+measurableName+"/"+propertiesList+"/";
 
     var restConfig={
         url: restURL
@@ -48,6 +53,18 @@ $(document).ready(function() {
         };
     }
     $.ajax(restConfig).then(function(data) {
+        var propertyAliasNamesMap=data.propertiesAliasNameMap;
+        var xAxisPropertyDisplayName=xAxisProperty;
+        var yAxisPropertyDisplayName=yAxisProperty;
+        if(propertyAliasNamesMap){
+            if(propertyAliasNamesMap[xAxisProperty]){
+                xAxisPropertyDisplayName=propertyAliasNamesMap[xAxisProperty];
+            }
+            if(propertyAliasNamesMap[yAxisProperty]){
+                yAxisPropertyDisplayName=propertyAliasNamesMap[yAxisProperty];
+            }
+        }
+
         var chartDataSet=data.measurableValues;
         var dataSeries= [];
         var zAxisPropertiesNameArray=zAxisProperty.split(",");
@@ -55,10 +72,14 @@ $(document).ready(function() {
         var propertiesDataMap={};
         $.each(zAxisPropertiesNameArray,function(index,value){
             propertiesDataMap[value]=[];
+            var propertyDisplayName=value;
+            if(propertyAliasNamesMap[value]){
+                propertyDisplayName=propertyAliasNamesMap[value];
+            }
             dataSeries.push({
                 data: propertiesDataMap[value],
                 type: "bubble",
-                name:value,
+                name:propertyDisplayName,
                 color:getCurrentGlobalColor(index)
             });
         });
@@ -68,14 +89,25 @@ $(document).ready(function() {
             currentDataDetail=chartDataSet[i];
             $.each(zAxisPropertiesNameArray,function(index,currentZAxisProperty){
                 var currentZValue=getMeasurablePropertyNumberValue(currentDataDetail,currentZAxisProperty);
+
+                var currentZAxisPropertyDisplayName=currentZAxisProperty;
+                if(propertyAliasNamesMap[currentZAxisProperty]){
+                    currentZAxisPropertyDisplayName=propertyAliasNamesMap[currentZAxisProperty];
+                }
+
                 propertiesDataMap[currentZAxisProperty].push({
                     x:  getMeasurablePropertyNumberValue(currentDataDetail,xAxisProperty),
                     y:  getMeasurablePropertyNumberValue(currentDataDetail,yAxisProperty),
                     z: currentZValue,
                     value: currentZValue,
-                    propertyName: currentZAxisProperty
+                    propertyName: currentZAxisPropertyDisplayName
                 })
             });
+        }
+
+        var measurableDisplayName=measurableName;
+        if(data.measurableAliasName){
+            measurableDisplayName=data.measurableAliasName;
         }
 
         var chartConfig= {
@@ -88,7 +120,7 @@ $(document).ready(function() {
                 enabled: true
             },
             title: {
-                text: discoverSpaceName+" "+measurableType+" "+measurableName
+                text: discoverSpaceName+" "+measurableTypeDisplayName+": "+measurableDisplayName
             },
             subtitle: {
                 text: "数据总量:" +chartDataSet.length
@@ -96,7 +128,7 @@ $(document).ready(function() {
             xAxis: {
                 gridLineWidth: 1,
                 title: {
-                    text: xAxisProperty+" (x)"
+                    text: xAxisPropertyDisplayName+" (x)"
                 },
                 labels: {
                     format: '{value}'
@@ -106,7 +138,7 @@ $(document).ready(function() {
                 startOnTick: false,
                 endOnTick: false,
                 title: {
-                    text: yAxisProperty+" (y)"
+                    text: yAxisPropertyDisplayName+" (y)"
                 },
                 labels: {
                     format: '{value}'
@@ -117,8 +149,8 @@ $(document).ready(function() {
                 useHTML: true,
                 headerFormat: '<table>',
                 pointFormat:
-                '<tr><th>'+xAxisProperty+' (x): </th><td>{point.x}</td></tr>' +
-                '<tr><th>'+yAxisProperty+' (y): </th><td>{point.y}</td></tr>' +
+                '<tr><th>'+xAxisPropertyDisplayName+' (x): </th><td>{point.x}</td></tr>' +
+                '<tr><th>'+yAxisPropertyDisplayName+' (y): </th><td>{point.y}</td></tr>' +
                 '<tr><th>{point.propertyName} (z): </th><td>{point.z}</td></tr>',
                 footerFormat: '</table>',
                 followPointer: false
@@ -149,7 +181,7 @@ $(document).ready(function() {
                     style: {
                         fontStyle: 'italic'
                     },
-                    text: xAxisProperty +'='+Number(xRulerValue)
+                    text: xAxisPropertyDisplayName +'='+Number(xRulerValue)
                 },
                 zIndex: 3
             }];
@@ -166,7 +198,7 @@ $(document).ready(function() {
                     style: {
                         fontStyle: 'italic'
                     },
-                    text: yAxisProperty +'='+Number(yRulerValue),
+                    text: yAxisPropertyDisplayName +'='+Number(yRulerValue),
                     x: -10
                 },
                 zIndex: 3

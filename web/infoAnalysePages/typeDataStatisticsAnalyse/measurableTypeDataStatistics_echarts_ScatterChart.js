@@ -20,14 +20,18 @@ $(document).ready(function() {
     var querySQL=getQueryString("querySQL");
 
     var restBaseURL;
+    var measurableTypeDisplayName="";
     if(measurableType=="FACT"){
-        restBaseURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeDataStatisticsAnalyseService/factTypeDataList/";
+        restBaseURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeDataStatisticsAnalyseService/factTypePropertiesDataList/";
+        measurableTypeDisplayName="\u4e8b\u5b9e\u6570\u636e";
     }
     if(measurableType=="DIMENSION"){
-        restBaseURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeDataStatisticsAnalyseService/dimensionTypeDataList/";
+        restBaseURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeDataStatisticsAnalyseService/dimensionTypePropertiesDataList/";
+        measurableTypeDisplayName="\u7ef4\u5ea6\u6570\u636e";
     }
     if(measurableType=="RELATION"){
-        restBaseURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeDataStatisticsAnalyseService/relationTypeDataList/";
+        restBaseURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeDataStatisticsAnalyseService/relationTypePropertiesDataList/";
+        measurableTypeDisplayName="\u5173\u7cfb\u6570\u636e";
     }
     if(!restBaseURL){
         return;
@@ -35,7 +39,8 @@ $(document).ready(function() {
     if(graphHeight){
         document.getElementById('main').style.height=""+graphHeight+"px";
     }
-    var restURL=restBaseURL+discoverSpaceName+"/"+measurableName+"/";
+    var propertiesList=scatterProperty+","+xAxisProperty+","+yAxisProperty;
+    var restURL=restBaseURL+discoverSpaceName+"/"+measurableName+"/"+propertiesList+"/";
 
     var restConfig={
         url: restURL
@@ -48,6 +53,27 @@ $(document).ready(function() {
     }
 
     $.ajax(restConfig).then(function(data) {
+        var propertyAliasNamesMap=data.propertiesAliasNameMap;
+        var xAxisPropertyDisplayName=xAxisProperty;
+        var yAxisPropertyDisplayName=yAxisProperty;
+        var scatterPropertyDisplayName=scatterProperty;
+        if(propertyAliasNamesMap){
+            if(propertyAliasNamesMap[xAxisProperty]){
+                xAxisPropertyDisplayName=propertyAliasNamesMap[xAxisProperty];
+            }
+            if(propertyAliasNamesMap[yAxisProperty]){
+                yAxisPropertyDisplayName=propertyAliasNamesMap[yAxisProperty];
+            }
+            if(propertyAliasNamesMap[scatterProperty]){
+                scatterPropertyDisplayName=propertyAliasNamesMap[scatterProperty];
+            }
+        }
+
+        var measurableDisplayName=measurableName;
+        if(data.measurableAliasName){
+            measurableDisplayName=data.measurableAliasName;
+        }
+
         var chartDataSet=data.measurableValues;
 
         var dataSeries= [];
@@ -75,7 +101,7 @@ $(document).ready(function() {
         var myChart = echarts.init(document.getElementById('main'));
         option = {
             title : {
-                text: discoverSpaceName+" "+measurableType+" "+measurableName,
+                text: discoverSpaceName+" "+measurableTypeDisplayName+": "+measurableDisplayName,
                 subtext: "数据总量:" +chartDataSet.length
             },
             grid: {
@@ -125,7 +151,7 @@ $(document).ready(function() {
             xAxis : [
                 {
                     type : 'value',
-                    name : xAxisProperty +" (x)",
+                    name : xAxisPropertyDisplayName +" (x)",
                     nameLocation:'middle',
                     scale:true,
                     axisLabel : {
@@ -139,7 +165,7 @@ $(document).ready(function() {
             yAxis : [
                 {
                     type : 'value',
-                    name : yAxisProperty +" (y)",
+                    name : yAxisPropertyDisplayName +" (y)",
                     nameLocation:'middle',
                     scale:true,
                     axisLabel : {

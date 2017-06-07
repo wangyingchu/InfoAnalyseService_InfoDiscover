@@ -26,14 +26,18 @@ $(document).ready(function() {
     var querySQL=getQueryString("querySQL");
 
     var restBaseURL;
+    var measurableTypeDisplayName="";
     if(measurableType=="FACT"){
-        restBaseURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeDataStatisticsAnalyseService/factTypePropertiesJSON/";
+        restBaseURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeDataStatisticsAnalyseService/factTypePropertiesBriefJSON/";
+        measurableTypeDisplayName="\u4e8b\u5b9e\u6570\u636e";
     }
     if(measurableType=="DIMENSION"){
-        restBaseURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeDataStatisticsAnalyseService/dimensionTypePropertiesJSON/";
+        restBaseURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeDataStatisticsAnalyseService/dimensionTypePropertiesBriefJSON/";
+        measurableTypeDisplayName="\u7ef4\u5ea6\u6570\u636e";
     }
     if(measurableType=="RELATION"){
-        restBaseURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeDataStatisticsAnalyseService/relationTypePropertiesJSON/";
+        restBaseURL=APPLICATION_REST_SERVICE_CONTEXT+"/ws/typeDataStatisticsAnalyseService/relationTypePropertiesBriefJSON/";
+        measurableTypeDisplayName="\u5173\u7cfb\u6570\u636e";
     }
     if(!restBaseURL){
         return;
@@ -66,8 +70,31 @@ $(document).ready(function() {
 
     var scatterPropertiesValueArray=scatterPropertyValues.split(",");
 
-    var plotlyChartRenderFunction=function(err, rows) {
-        document.getElementById('graphTitle').innerHTML = discoverSpaceName + " " + measurableType + " " + measurableName;
+    var plotlyChartRenderFunction=function(err, data) {
+        var rows =data.propertyRowData;
+
+        var propertyAliasNamesMap=data.propertiesAliasNameMap;
+        var xAxisPropertyDisplayName=xAxisProperty;
+        var yAxisPropertyDisplayName=yAxisProperty;
+        var zAxisPropertyDisplayName=zAxisProperty;
+        if(propertyAliasNamesMap){
+            if(propertyAliasNamesMap[xAxisProperty]){
+                xAxisPropertyDisplayName=propertyAliasNamesMap[xAxisProperty];
+            }
+            if(propertyAliasNamesMap[yAxisProperty]){
+                yAxisPropertyDisplayName=propertyAliasNamesMap[yAxisProperty];
+            }
+            if(propertyAliasNamesMap[zAxisProperty]){
+                zAxisPropertyDisplayName=propertyAliasNamesMap[zAxisProperty];
+            }
+        }
+
+        var measurableDisplayName=measurableName;
+        if(data.measurableAliasName){
+            measurableDisplayName=data.measurableAliasName;
+        }
+
+        document.getElementById('graphTitle').innerHTML = discoverSpaceName + " " + measurableTypeDisplayName + ": " + measurableDisplayName;
         document.getElementById('dataSizeText').innerHTML = rows.length;
         function unpack(rows, key) {
             return rows.map(function (row) {
@@ -112,17 +139,17 @@ $(document).ready(function() {
                 xaxis: {
                     type: 'linear',
                     zeroline: true,
-                    title: xAxisProperty + ' (x)'
+                    title: xAxisPropertyDisplayName + ' (x)'
                 },
                 yaxis: {
                     type: 'linear',
                     zeroline: true,
-                    title: yAxisProperty + ' (y)'
+                    title: yAxisPropertyDisplayName + ' (y)'
                 },
                 zaxis: {
                     type: 'linear',
                     zeroline: true,
-                    title: zAxisProperty + ' (z)'
+                    title: zAxisPropertyDisplayName + ' (z)'
                 },
                 aspectratio: {
                     x: 2,

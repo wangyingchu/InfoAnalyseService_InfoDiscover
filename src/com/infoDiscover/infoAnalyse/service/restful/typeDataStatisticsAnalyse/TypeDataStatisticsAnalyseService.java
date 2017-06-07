@@ -1,5 +1,7 @@
 package com.infoDiscover.infoAnalyse.service.restful.typeDataStatisticsAnalyse;
 
+import com.infoDiscover.infoAnalyse.service.restful.vo.MeasurablePropertiesQueryBriefResultSetVO;
+import com.infoDiscover.infoAnalyse.service.restful.vo.MeasurablePropertiesQueryResultSetVO;
 import com.infoDiscover.infoAnalyse.service.restful.vo.MeasurableQueryResultSetVO;
 import com.infoDiscover.infoAnalyse.service.util.DiscoverSpaceOperationUtil;
 
@@ -40,6 +42,23 @@ public class TypeDataStatisticsAnalyseService {
         return null;
     }
 
+    @POST
+    @Path("/dimensionTypePropertiesDataList/{discoverSpaceName}/{dimensionTypeName}/{propertiesList}")
+    @Produces("application/json")
+    public MeasurablePropertiesQueryResultSetVO postDimensionTypePropertiesDataList(@PathParam("discoverSpaceName")String discoverSpaceName,
+                                                                          @PathParam("dimensionTypeName")String dimensionTypeName,@FormParam("querySQL") String querySQL,@PathParam("propertiesList")String propertiesList){
+        if(querySQL!=null) {
+            byte[] base64CharArray=Base64.getDecoder().decode(querySQL);
+            try {
+                String orginalString=new String(base64CharArray,"utf-8");
+                return DiscoverSpaceOperationUtil.queryDimensionPropertiesDataByQuerySQL(discoverSpaceName,dimensionTypeName,orginalString,propertiesList);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
     @GET
     @Path("/relationTypeDataList/{discoverSpaceName}/{relationTypeName}")
     @Produces("application/json")
@@ -63,6 +82,23 @@ public class TypeDataStatisticsAnalyseService {
         return null;
     }
 
+    @POST
+    @Path("/relationTypePropertiesDataList/{discoverSpaceName}/{relationTypeName}/{propertiesList}")
+    @Produces("application/json")
+    public MeasurablePropertiesQueryResultSetVO postRelationTypePropertiesDataList(@PathParam("discoverSpaceName")String discoverSpaceName,
+                                                                                   @PathParam("relationTypeName")String relationTypeName,@FormParam("querySQL") String querySQL, @PathParam("propertiesList")String propertiesList){
+        if(querySQL!=null) {
+            byte[] base64CharArray=Base64.getDecoder().decode(querySQL);
+            try {
+                String orginalString=new String(base64CharArray,"utf-8");
+                return DiscoverSpaceOperationUtil.queryRelationPropertiesDataByQuerySQL(discoverSpaceName,relationTypeName,orginalString,propertiesList);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
     @GET
     @Path("/factTypeDataList/{discoverSpaceName}/{factTypeName}")
     @Produces("application/json")
@@ -79,6 +115,23 @@ public class TypeDataStatisticsAnalyseService {
             try {
                 String orginalString=new String(base64CharArray,"utf-8");
                 return DiscoverSpaceOperationUtil.queryFactDataByQuerySQL(discoverSpaceName,factTypeName,orginalString);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    @POST
+    @Path("/factTypePropertiesDataList/{discoverSpaceName}/{factTypeName}/{propertiesList}")
+    @Produces("application/json")
+    public MeasurablePropertiesQueryResultSetVO postFactTypePropertiesDataList(@PathParam("discoverSpaceName")String discoverSpaceName,
+                                                                               @PathParam("factTypeName")String factTypeName, @FormParam("querySQL") String querySQL, @PathParam("propertiesList")String propertiesList){
+        if(querySQL!=null) {
+            byte[] base64CharArray=Base64.getDecoder().decode(querySQL);
+            try {
+                String orginalString=new String(base64CharArray,"utf-8");
+                return DiscoverSpaceOperationUtil.queryFactPropertiesDataByQuerySQL(discoverSpaceName,factTypeName,orginalString,propertiesList);
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
@@ -130,6 +183,22 @@ public class TypeDataStatisticsAnalyseService {
         return null;
     }
 
+    @POST
+    @Path("/factTypePropertiesBriefJSON/{discoverSpaceName}/{factTypeName}/{properties}")
+    @Produces("application/json")
+    public MeasurablePropertiesQueryBriefResultSetVO postFactTypePropertiesBriefJSON(@PathParam("discoverSpaceName")String discoverSpaceName, @PathParam("factTypeName")String factTypeName, @PathParam("properties")String properties, @FormParam("querySQL") String querySQL){
+        if(querySQL!=null) {
+            byte[] base64CharArray=Base64.getDecoder().decode(querySQL);
+            try {
+                String orginalString=new String(base64CharArray,"utf-8");
+                return DiscoverSpaceOperationUtil.generateFactTypePropertiesBriefDataByQuerySQL(discoverSpaceName,factTypeName,properties,orginalString);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
     @GET
     @Path("/dimensionTypePropertiesJSON/{discoverSpaceName}/{dimensionTypeName}/{properties}")
     @Produces("application/json")
@@ -153,6 +222,22 @@ public class TypeDataStatisticsAnalyseService {
         return null;
     }
 
+    @POST
+    @Path("/dimensionTypePropertiesBriefJSON/{discoverSpaceName}/{dimensionTypeName}/{properties}")
+    @Produces("application/json")
+    public MeasurablePropertiesQueryBriefResultSetVO postDimensionTypePropertiesBriefJSON(@PathParam("discoverSpaceName")String discoverSpaceName, @PathParam("dimensionTypeName")String dimensionTypeName, @PathParam("properties")String properties,@FormParam("querySQL") String querySQL){
+        if(querySQL!=null) {
+            byte[] base64CharArray=Base64.getDecoder().decode(querySQL);
+            try {
+                String orginalString=new String(base64CharArray,"utf-8");
+                return DiscoverSpaceOperationUtil.generateDimensionTypePropertiesBriefJSONByQuerySQL(discoverSpaceName,dimensionTypeName,properties,orginalString);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
     @GET
     @Path("/relationTypePropertiesJSON/{discoverSpaceName}/{relationTypeName}/{properties}")
     @Produces("application/json")
@@ -169,6 +254,22 @@ public class TypeDataStatisticsAnalyseService {
             try {
                 String orginalString=new String(base64CharArray,"utf-8");
                 return DiscoverSpaceOperationUtil.generateRelationTypePropertiesJSONByQuerySQL(discoverSpaceName,relationTypeName,properties,orginalString);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    @POST
+    @Path("/relationTypePropertiesBriefJSON/{discoverSpaceName}/{relationTypeName}/{properties}")
+    @Produces("application/json")
+    public MeasurablePropertiesQueryBriefResultSetVO postRelationTypePropertiesBriefJSON(@PathParam("discoverSpaceName")String discoverSpaceName, @PathParam("relationTypeName")String relationTypeName, @PathParam("properties")String properties,@FormParam("querySQL") String querySQL){
+        if(querySQL!=null) {
+            byte[] base64CharArray=Base64.getDecoder().decode(querySQL);
+            try {
+                String orginalString=new String(base64CharArray,"utf-8");
+                return DiscoverSpaceOperationUtil.generateRelationTypePropertiesBriefJSONByQuerySQL(discoverSpaceName,relationTypeName,properties,orginalString);
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
