@@ -1,6 +1,7 @@
 package com.infoDiscover.infoAnalyse.service.restful.typeInstanceAnalyse;
 
 import com.infoDiscover.infoAnalyse.service.restful.vo.*;
+import com.infoDiscover.infoAnalyse.service.restful.vo.typeInstance.*;
 import com.infoDiscover.infoAnalyse.service.util.DiscoverSpaceOperationConstant;
 import com.infoDiscover.infoAnalyse.service.util.DiscoverSpaceOperationUtil;
 
@@ -90,7 +91,7 @@ public class TypeInstanceAnalyseService {
     @Path("/typeInstancesShortestPathExplore/{discoverSpaceName}/{relationableAId}/{relationableBId}")
     @Produces("application/json")
     public ShortestPathBetweenTwoMeasurablesDetailInfoVO getShortestPathBetweenTwoTypeInstances(@PathParam("discoverSpaceName")String discoverSpaceName, @PathParam("relationableAId")String relationableAId,
-                                                                                             @PathParam("relationableBId")String relationableBId){
+                                                                                                @PathParam("relationableBId")String relationableBId){
         ShortestPathBetweenTwoMeasurablesDetailInfoVO resultInfo=DiscoverSpaceOperationUtil.getShortestPathBetweenTwoRelationable(discoverSpaceName,relationableAId,relationableBId);
         return resultInfo;
     }
@@ -117,7 +118,7 @@ public class TypeInstanceAnalyseService {
     @Path("/typeInstancesShortestPathsExplore/{discoverSpaceName}/{relationableAId}/{relationableBId}/{pathNumber}")
     @Produces("application/json")
     public PathsBetweenTwoMeasurablesDetailInfoVO getShortestPathsBetweenTwoTypeInstances(@PathParam("discoverSpaceName")String discoverSpaceName, @PathParam("relationableAId")String relationableAId,
-                                                                                        @PathParam("relationableBId")String relationableBId,@PathParam("pathNumber")String pathNumber){
+                                                                                          @PathParam("relationableBId")String relationableBId, @PathParam("pathNumber")String pathNumber){
         int pathNumberInt=Integer.parseInt(pathNumber);
         PathsBetweenTwoMeasurablesDetailInfoVO resultInfo=DiscoverSpaceOperationUtil.getPathsBetweenTwoRelationable(discoverSpaceName,relationableAId,relationableBId,"SHORTEST",pathNumberInt);
         return resultInfo;

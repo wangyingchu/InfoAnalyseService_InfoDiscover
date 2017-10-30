@@ -1,8 +1,8 @@
 package com.infoDiscover.infoAnalyse.service.restful.infoDiscoverSpaceDataCRUD;
 
-import com.infoDiscover.infoAnalyse.service.restful.vo.DataCRUDInputVO;
+import com.infoDiscover.infoAnalyse.service.restful.vo.dataCRUD.DataCRUDInputVO;
 import com.infoDiscover.infoAnalyse.service.restful.vo.MeasurableQueryResultSetVO;
-import com.infoDiscover.infoAnalyse.service.restful.vo.DataCRUDResultVO;
+import com.infoDiscover.infoAnalyse.service.restful.vo.dataCRUD.DataCRUDResultVO;
 import com.infoDiscover.infoAnalyse.service.util.DiscoverSpaceDataCRUDUtil;
 import com.infoDiscover.infoDiscoverEngine.dataWarehouse.ExploreParameters;
 

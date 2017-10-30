@@ -1,4 +1,4 @@
-package com.infoDiscover.infoAnalyse.service.restful.vo;
+package com.infoDiscover.infoAnalyse.service.restful.vo.dataCRUD;
 
 public class DataCRUDResultVO {
 

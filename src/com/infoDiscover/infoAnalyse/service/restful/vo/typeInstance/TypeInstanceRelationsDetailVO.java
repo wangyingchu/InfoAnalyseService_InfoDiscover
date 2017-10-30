@@ -1,4 +1,7 @@
-package com.infoDiscover.infoAnalyse.service.restful.vo;
+package com.infoDiscover.infoAnalyse.service.restful.vo.typeInstance;
+
+import com.infoDiscover.infoAnalyse.service.restful.vo.RelationDetailInfoVO;
+import com.infoDiscover.infoAnalyse.service.restful.vo.RelationableValueDetailVO;
 
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.List;

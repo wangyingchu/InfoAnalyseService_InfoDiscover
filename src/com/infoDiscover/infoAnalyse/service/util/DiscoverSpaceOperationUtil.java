@@ -1,10 +1,10 @@
 package com.infoDiscover.infoAnalyse.service.util;
 
 import com.infoDiscover.infoAnalyse.service.restful.vo.*;
+import com.infoDiscover.infoAnalyse.service.restful.vo.typeInstance.*;
 import com.infoDiscover.infoDiscoverEngine.dataMart.*;
 import com.infoDiscover.infoDiscoverEngine.dataWarehouse.ExploreParameters;
 import com.infoDiscover.infoDiscoverEngine.dataWarehouse.InformationExplorer;
-import com.infoDiscover.infoDiscoverEngine.dataWarehouse.InformationFiltering.EqualFilteringItem;
 import com.infoDiscover.infoDiscoverEngine.dataWarehouse.InformationType;
 import com.infoDiscover.infoDiscoverEngine.dataWarehouse.SQLBuilder;
 import com.infoDiscover.infoDiscoverEngine.infoDiscoverBureau.InfoDiscoverSpace;
@@ -2284,7 +2284,7 @@ public class DiscoverSpaceOperationUtil {
         }
     }
 
-    public static TypeInstanceSimilarDataDetailVO getSimilarRelationableConnectedSameDimensions(String spaceName,String sourceRelationableId,String relatedDimensionsListStr,String filteringPattern){
+    public static TypeInstanceSimilarDataDetailVO getSimilarRelationableConnectedSameDimensions(String spaceName, String sourceRelationableId, String relatedDimensionsListStr, String filteringPattern){
         String[] dimensionsIdArray=relatedDimensionsListStr.split(",");
         List<String> relatedDimensionsList=new ArrayList<>();
         for(String currentDimensionId:dimensionsIdArray){
@@ -2400,7 +2400,7 @@ public class DiscoverSpaceOperationUtil {
         return null;
     }
 
-    public static ShortestPathBetweenTwoMeasurablesDetailInfoVO getShortestPathBetweenTwoRelationable(String spaceName,String relationable1Id,String relationable2Id){
+    public static ShortestPathBetweenTwoMeasurablesDetailInfoVO getShortestPathBetweenTwoRelationable(String spaceName, String relationable1Id, String relationable2Id){
         InfoDiscoverSpace targetSpace=null;
         try {
             targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
@@ -2535,7 +2535,7 @@ public class DiscoverSpaceOperationUtil {
         return null;
     }
 
-    public static PathsBetweenTwoMeasurablesDetailInfoVO getPathsBetweenTwoRelationable(String spaceName,String relationable1Id,String relationable2Id,String pathType,int pathNumber){
+    public static PathsBetweenTwoMeasurablesDetailInfoVO getPathsBetweenTwoRelationable(String spaceName, String relationable1Id, String relationable2Id, String pathType, int pathNumber){
         InfoDiscoverSpace targetSpace=null;
         try {
             targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);

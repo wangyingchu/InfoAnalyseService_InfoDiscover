@@ -2,7 +2,7 @@ package com.infoDiscover.infoAnalyse.service.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.infoDiscover.infoAnalyse.service.restful.vo.*;
+import com.infoDiscover.infoAnalyse.service.restful.vo.dataCRUD.*;
 import com.infoDiscover.infoDiscoverEngine.dataMart.Dimension;
 import com.infoDiscover.infoDiscoverEngine.dataMart.Fact;
 import com.infoDiscover.infoDiscoverEngine.dataMart.Measurable;
