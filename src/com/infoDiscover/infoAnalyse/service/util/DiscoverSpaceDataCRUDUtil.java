@@ -2,13 +2,12 @@ package com.infoDiscover.infoAnalyse.service.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.infoDiscover.infoAnalyse.service.restful.vo.DataCRUDInputVO;
-import com.infoDiscover.infoAnalyse.service.restful.vo.DataPayloadWrapperVO;
-import com.infoDiscover.infoAnalyse.service.restful.vo.DataTypePropertyInfoVO;
-import com.infoDiscover.infoAnalyse.service.restful.vo.DataCRUDResultVO;
+import com.infoDiscover.infoAnalyse.service.restful.vo.*;
+import com.infoDiscover.infoDiscoverEngine.dataMart.Dimension;
+import com.infoDiscover.infoDiscoverEngine.dataMart.Fact;
+import com.infoDiscover.infoDiscoverEngine.dataMart.Measurable;
+import com.infoDiscover.infoDiscoverEngine.dataMart.Relation;
 import com.infoDiscover.infoDiscoverEngine.infoDiscoverBureau.InfoDiscoverSpace;
-import com.infoDiscover.infoDiscoverEngine.util.exception.InfoDiscoveryEngineDataMartException;
-import com.infoDiscover.infoDiscoverEngine.util.exception.InfoDiscoveryEngineInfoExploreException;
 import com.infoDiscover.infoDiscoverEngine.util.exception.InfoDiscoveryEngineRuntimeException;
 import com.infoDiscover.infoDiscoverEngine.util.factory.DiscoverEngineComponentFactory;
 import com.infoDiscover.solution.template.DataImporter;
@@ -92,6 +91,67 @@ public class DiscoverSpaceDataCRUDUtil {
         return null;
     }
 
+    private static Map<String,Object> getPropertyValueMap( List<DataPropertyPayloadVO> propertyValuePayloadList){
+        Map<String,Object> propertyValueMap=new HashMap<>();
+        if(propertyValuePayloadList!=null){
+            for(DataPropertyPayloadVO currentDataPropertyPayloadVO:propertyValuePayloadList){
+                String propertyName=currentDataPropertyPayloadVO.getPropertyName();
+                String propertyType=currentDataPropertyPayloadVO.getPropertyType();
+                Object propertyValue=currentDataPropertyPayloadVO.getPropertyValue();
+                if("String".equals(propertyType)){
+                    propertyValueMap.put(propertyName,propertyValue.toString());
+                }
+                if("Int".equals(propertyType)){
+                    propertyValueMap.put(propertyName,(Integer)propertyValue);
+                }
+                if("Long".equals(propertyType)){
+                    Long targetPropertyValue=null;
+                    if(propertyValue instanceof Integer){
+                        targetPropertyValue=new Long((Integer)propertyValue);
+                    }else if(propertyValue instanceof Long){
+                        targetPropertyValue=(Long)propertyValue;
+                    }
+                    if(targetPropertyValue!=null){
+                        propertyValueMap.put(propertyName,targetPropertyValue);
+                    }
+                }
+                if("Double".equals(propertyType)){
+                    propertyValueMap.put(propertyName,(Double)propertyValue);
+                }
+                if("Float".equals(propertyType)){
+                    Float  targetPropertyValue=null;
+                    if(propertyValue instanceof Double){
+                        targetPropertyValue=new Float((Double)propertyValue);
+                    }else if(propertyValue instanceof Float){
+                        targetPropertyValue=(Float)propertyValue;
+                    }
+                    if(targetPropertyValue!=null){
+                        propertyValueMap.put(propertyName,targetPropertyValue);
+                    }
+                }
+                if("Boolean".equals(propertyType)){
+                    propertyValueMap.put(propertyName,(Boolean)propertyValue);
+                }
+                if("Date".equals(propertyType)){
+                    Date dateValue=new Date((Long)propertyValue);
+                    propertyValueMap.put(propertyName,dateValue);
+                }
+                if("Short".equals(propertyType)){
+                    Short targetPropertyValue=null;
+                    if(propertyValue instanceof Integer){
+                        targetPropertyValue=((Integer)propertyValue).shortValue();
+                    }else if(propertyValue instanceof Short){
+                        targetPropertyValue=(Short)propertyValue;
+                    }
+                    if(targetPropertyValue!=null){
+                        propertyValueMap.put(propertyName,targetPropertyValue);
+                    }
+                }
+            }
+        }
+        return propertyValueMap;
+    }
+/*
     public static boolean createTypeDate(String discoverSpaceName,String dataTypeKind,String dataTypeName,List<DataTypePropertyInfoVO> dataPropertiesList){
         DataImporter importer = new DataImporter(discoverSpaceName);
         String jsonContent=transferTypeDataToJson(dataTypeKind,dataTypeName,dataPropertiesList);
@@ -103,17 +163,13 @@ public class DiscoverSpaceDataCRUDUtil {
         }
         return false;
     }
-
+*/
     public static DataCRUDResultVO.operationResultCodeValue createTypeDataFromJSON(String discoverSpaceName, DataPayloadWrapperVO dataPayloadWrapper){
         DataImporter importer = new DataImporter(discoverSpaceName);
         try {
             ObjectMapper mapper=new ObjectMapper();
             String jsonDataContent=mapper.writeValueAsString(dataPayloadWrapper);
-
-            System.out.println(jsonDataContent);
-            System.out.println(jsonDataContent);
-
-            importer.importData(jsonDataContent,true);
+            importer.importData(jsonDataContent,false);
             return DataCRUDResultVO.operationResultCodeValue.SUCCESS;
         } catch (Exception e) {
             e.printStackTrace();
@@ -121,48 +177,159 @@ public class DiscoverSpaceDataCRUDUtil {
         }
     }
 
-    public static DataCRUDResultVO.operationResultCodeValue updateTypeDataFromJSON(String discoverSpaceName, DataPayloadWrapperVO dataPayloadWrapper){
-        DataImporter importer = new DataImporter(discoverSpaceName);
-        try {
-           // importer.importData(jsonDataContent,true);
-            return DataCRUDResultVO.operationResultCodeValue.SUCCESS;
-        } catch (Exception e) {
-           // System.out.println("Error Json Content: "+jsonDataContent);
-            e.printStackTrace();
-            return DataCRUDResultVO.operationResultCodeValue.FAILURE;
+    public static DataCRUDResultVO updateTypeData(DataCRUDInputVO dataCRUDInput){
+        DataCRUDResultVO dataCRUDResultVO =new DataCRUDResultVO();
+        String discoverSpaceName=dataCRUDInput.getDiscoverSpaceName();
+        List<DataPayloadVO> dataPayLoadList=dataCRUDInput.getDataPayload().getData();
+        int modifiedDataCount=0;
+        if(dataPayLoadList!=null){
+            InfoDiscoverSpace targetSpace=null;
+            try {
+                targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(discoverSpaceName);
+                for(DataPayloadVO currentDataPayload:dataPayLoadList){
+                    String payloadType=currentDataPayload.getType();
+                    //String currentPayloadTypeName=currentDataPayload.getTypeName();
+                    String recordId=currentDataPayload.getRecordId();
+                    if(recordId!=null){
+                        List<DataPropertyPayloadVO> propertyList=currentDataPayload.getProperties();
+                        if(propertyList!=null){
+                            Map<String,Object> propertyValueMap=getPropertyValueMap(propertyList);
+                            if(DiscoverSpaceOperationConstant.PAYLOAD_DIMENSION.equals(payloadType)){
+                                Dimension targetDimension=targetSpace.getDimensionById(recordId);
+                                targetDimension.addNewOrUpdateProperties(propertyValueMap);
+                                modifiedDataCount++;
+                            }
+                            if(DiscoverSpaceOperationConstant.PAYLOAD_FACT.equals(payloadType)){
+                                Fact targetFact=targetSpace.getFactById(recordId);
+                                targetFact.addNewOrUpdateProperties(propertyValueMap);
+                                modifiedDataCount++;
+                            }
+                            if(DiscoverSpaceOperationConstant.PAYLOAD_RELATION.equals(payloadType)){
+                                Relation targetRelation=targetSpace.getRelationById(recordId);
+                                targetRelation.addNewOrUpdateProperties(propertyValueMap);
+                                modifiedDataCount++;
+                            }
+                        }
+                    }
+                }
+                if(modifiedDataCount>0){
+                    dataCRUDResultVO.setOperationReturnCode(DataCRUDResultVO.operationResultCodeValue.SUCCESS);
+                    dataCRUDResultVO.setModifiedDataCount(modifiedDataCount);
+                }else{
+                    dataCRUDResultVO.setOperationReturnCode(DataCRUDResultVO.operationResultCodeValue.DATA_NOT_MODIFIED);
+                }
+            } catch (InfoDiscoveryEngineRuntimeException e) {
+                e.printStackTrace();
+                dataCRUDResultVO.setOperationReturnCode(DataCRUDResultVO.operationResultCodeValue.FAILURE);
+            } finally {
+                if(targetSpace!=null){
+                    targetSpace.closeSpace();
+                }
+            }
+        }else {
+            dataCRUDResultVO.setOperationReturnCode(DataCRUDResultVO.operationResultCodeValue.INVALID_INPUT);
         }
+        return dataCRUDResultVO;
     }
 
-    public static DataCRUDResultVO.operationResultCodeValue deleteMeasurable(String discoverSpaceName, String measurableIdTypeKind, String measurableId){
-        InfoDiscoverSpace targetSpace=null;
-        try {
-            targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(discoverSpaceName);
-            boolean deleteResult=false;
-            if(DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION.equals(measurableIdTypeKind)){
-                deleteResult=targetSpace.removeDimension(measurableIdTypeKind);
+    public static DataCRUDResultVO deleteTypeData(DataCRUDInputVO dataCRUDInput){
+        DataCRUDResultVO dataCRUDResultVO =new DataCRUDResultVO();
+        String discoverSpaceName=dataCRUDInput.getDiscoverSpaceName();
+        List<DataPayloadVO> dataPayLoadList=dataCRUDInput.getDataPayload().getData();
+        int modifiedDataCount=0;
+        if(dataPayLoadList!=null){
+            InfoDiscoverSpace targetSpace=null;
+            try {
+                targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(discoverSpaceName);
+                for(DataPayloadVO currentDataPayload:dataPayLoadList){
+                    String payloadType=currentDataPayload.getType();
+                    String recordId=currentDataPayload.getRecordId();
+                    if(recordId!=null){
+                        if(DiscoverSpaceOperationConstant.PAYLOAD_DIMENSION.equals(payloadType)){
+                            boolean removeResult=targetSpace.removeDimension(recordId);
+                            if(removeResult){
+                                modifiedDataCount++;
+                            }
+                        }
+                        if(DiscoverSpaceOperationConstant.PAYLOAD_FACT.equals(payloadType)){
+                            boolean removeResult=targetSpace.removeFact(recordId);
+                            if(removeResult){
+                                modifiedDataCount++;
+                            }
+                        }
+                        if(DiscoverSpaceOperationConstant.PAYLOAD_RELATION.equals(payloadType)){
+                            boolean removeResult=targetSpace.removeRelation(recordId);
+                            if(removeResult){
+                                modifiedDataCount++;
+                            }
+                        }
+                    }
+                }
+                if(modifiedDataCount>0){
+                    dataCRUDResultVO.setOperationReturnCode(DataCRUDResultVO.operationResultCodeValue.SUCCESS);
+                    dataCRUDResultVO.setModifiedDataCount(modifiedDataCount);
+                }else{
+                    dataCRUDResultVO.setOperationReturnCode(DataCRUDResultVO.operationResultCodeValue.DATA_NOT_MODIFIED);
+                }
+            } catch (InfoDiscoveryEngineRuntimeException e) {
+                e.printStackTrace();
+                dataCRUDResultVO.setOperationReturnCode(DataCRUDResultVO.operationResultCodeValue.FAILURE);
+            } finally {
+                if(targetSpace!=null){
+                    targetSpace.closeSpace();
+                }
             }
-            if(DiscoverSpaceOperationConstant.TYPEKIND_FACT.equals(measurableIdTypeKind)){
-                deleteResult=targetSpace.removeFact(measurableIdTypeKind);
-            }
-            if(DiscoverSpaceOperationConstant.TYPEKIND_RELATION.equals(measurableIdTypeKind)){
-                deleteResult=targetSpace.removeRelation(measurableIdTypeKind);
-            }
-            if(deleteResult){
-                return DataCRUDResultVO.operationResultCodeValue.SUCCESS;
-            }else{
-                return DataCRUDResultVO.operationResultCodeValue.FAILURE;
-            }
-        } catch (InfoDiscoveryEngineRuntimeException e) {
-            e.printStackTrace();
-            return DataCRUDResultVO.operationResultCodeValue.FAILURE;
-        } finally {
-            if(targetSpace!=null){
-                targetSpace.closeSpace();
-            }
+        }else {
+            dataCRUDResultVO.setOperationReturnCode(DataCRUDResultVO.operationResultCodeValue.INVALID_INPUT);
         }
+        return dataCRUDResultVO;
     }
 
-
-
-
+    public static DataCRUDResultVO deleteTypeDataProperties(DataCRUDInputVO dataCRUDInput){
+        DataCRUDResultVO dataCRUDResultVO =new DataCRUDResultVO();
+        String discoverSpaceName=dataCRUDInput.getDiscoverSpaceName();
+        List<DataPayloadVO> dataPayLoadList=dataCRUDInput.getDataPayload().getData();
+        int modifiedDataCount=0;
+        if(dataPayLoadList!=null){
+            InfoDiscoverSpace targetSpace=null;
+            try {
+                targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(discoverSpaceName);
+                for(DataPayloadVO currentDataPayload:dataPayLoadList){
+                    //String payloadType=currentDataPayload.getType();
+                    String recordId=currentDataPayload.getRecordId();
+                    String propertyNames=currentDataPayload.getPropertyNames();
+                    if(recordId!=null&&propertyNames!=null){
+                        Measurable targetMeasurable=targetSpace.getMeasurableById(recordId);
+                        if(targetMeasurable!=null){
+                            String[] propertyNameArray=propertyNames.split(",");
+                            for(String currentProperty:propertyNameArray){
+                                if(targetMeasurable.hasProperty(currentProperty)){
+                                    boolean removeResult=targetMeasurable.removeProperty(currentProperty);
+                                    if(removeResult){
+                                        modifiedDataCount++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if(modifiedDataCount>0){
+                    dataCRUDResultVO.setOperationReturnCode(DataCRUDResultVO.operationResultCodeValue.SUCCESS);
+                    dataCRUDResultVO.setModifiedDataCount(modifiedDataCount);
+                }else{
+                    dataCRUDResultVO.setOperationReturnCode(DataCRUDResultVO.operationResultCodeValue.DATA_NOT_MODIFIED);
+                }
+            } catch (InfoDiscoveryEngineRuntimeException e) {
+                e.printStackTrace();
+                dataCRUDResultVO.setOperationReturnCode(DataCRUDResultVO.operationResultCodeValue.FAILURE);
+            } finally {
+                if(targetSpace!=null){
+                    targetSpace.closeSpace();
+                }
+            }
+        }else {
+            dataCRUDResultVO.setOperationReturnCode(DataCRUDResultVO.operationResultCodeValue.INVALID_INPUT);
+        }
+        return dataCRUDResultVO;
+    }
 }

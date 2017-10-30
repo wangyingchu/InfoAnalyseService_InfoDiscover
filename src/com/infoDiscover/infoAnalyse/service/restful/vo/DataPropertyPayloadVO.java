@@ -31,7 +31,6 @@ public class DataPropertyPayloadVO {
         this.propertyValue = propertyValue;
     }
 
-
     public boolean getIsUniqueKey() {
         return isUniqueKey;
     }
@@ -39,8 +38,4 @@ public class DataPropertyPayloadVO {
     public void setIsUniqueKey(boolean uniqueKey) {
         isUniqueKey = uniqueKey;
     }
-
-
-
-
 }

@@ -3,7 +3,7 @@ package com.infoDiscover.infoAnalyse.service.restful.vo;
 public class DataCRUDResultVO {
 
     public enum operationResultCodeValue {
-        SUCCESS,FAILURE,INVALIDINPUT,UNKNOWN
+        SUCCESS,FAILURE,INVALID_INPUT,UNKNOWN,DATA_NOT_MODIFIED
     }
 
     public DataCRUDResultVO(){
@@ -12,6 +12,7 @@ public class DataCRUDResultVO {
 
     private long operationExecuteTime;
     private operationResultCodeValue operationReturnCode;
+    private long modifiedDataCount;
 
     public long getOperationExecuteTime() {
         return operationExecuteTime;
@@ -27,5 +28,13 @@ public class DataCRUDResultVO {
 
     public void setOperationReturnCode(operationResultCodeValue operationReturnCode) {
         this.operationReturnCode = operationReturnCode;
+    }
+
+    public long getModifiedDataCount() {
+        return modifiedDataCount;
+    }
+
+    public void setModifiedDataCount(long modifiedDataCount) {
+        this.modifiedDataCount = modifiedDataCount;
     }
 }

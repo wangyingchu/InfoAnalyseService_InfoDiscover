@@ -4,7 +4,6 @@ import com.infoDiscover.infoAnalyse.service.restful.vo.DataCRUDInputVO;
 import com.infoDiscover.infoAnalyse.service.restful.vo.MeasurableQueryResultSetVO;
 import com.infoDiscover.infoAnalyse.service.restful.vo.DataCRUDResultVO;
 import com.infoDiscover.infoAnalyse.service.util.DiscoverSpaceDataCRUDUtil;
-import com.infoDiscover.infoAnalyse.service.util.DiscoverSpaceOperationConstant;
 import com.infoDiscover.infoDiscoverEngine.dataWarehouse.ExploreParameters;
 
 import javax.ws.rs.*;
@@ -21,13 +20,13 @@ public class InfoDiscoverSpaceDataCRUDService {
         return null;
     }
 
-    @POST
+    @PUT
     @Path("/createRelationable/")
     @Produces("application/json")
     public DataCRUDResultVO createRelationable(DataCRUDInputVO dataCRUDInput){
         DataCRUDResultVO dataCRUDResultVO =new DataCRUDResultVO();
         if(dataCRUDInput.getDiscoverSpaceName()==null||dataCRUDInput.getDataPayload()==null){
-            dataCRUDResultVO.setOperationReturnCode(DataCRUDResultVO.operationResultCodeValue.INVALIDINPUT);
+            dataCRUDResultVO.setOperationReturnCode(DataCRUDResultVO.operationResultCodeValue.INVALID_INPUT);
         }else{
             DataCRUDResultVO.operationResultCodeValue resultCode=DiscoverSpaceDataCRUDUtil.createTypeDataFromJSON(dataCRUDInput.getDiscoverSpaceName(),dataCRUDInput.getDataPayload());
             dataCRUDResultVO.setOperationReturnCode(resultCode);
@@ -37,15 +36,15 @@ public class InfoDiscoverSpaceDataCRUDService {
     }
 
     @POST
-    @Path("/updateRelationable/")
+    @Path("/updateMeasurable/")
     @Produces("application/json")
-    public DataCRUDResultVO updateRelationable(DataCRUDInputVO dataCRUDInput){
-        DataCRUDResultVO dataCRUDResultVO =new DataCRUDResultVO();
+    public DataCRUDResultVO updateMeasurable(DataCRUDInputVO dataCRUDInput){
+        DataCRUDResultVO dataCRUDResultVO;
         if(dataCRUDInput.getDiscoverSpaceName()==null||dataCRUDInput.getDataPayload()==null){
-            dataCRUDResultVO.setOperationReturnCode(DataCRUDResultVO.operationResultCodeValue.INVALIDINPUT);
+            dataCRUDResultVO=new DataCRUDResultVO();
+            dataCRUDResultVO.setOperationReturnCode(DataCRUDResultVO.operationResultCodeValue.INVALID_INPUT);
         }else{
-            DataCRUDResultVO.operationResultCodeValue resultCode=DiscoverSpaceDataCRUDUtil.updateTypeDataFromJSON(dataCRUDInput.getDiscoverSpaceName(),dataCRUDInput.getDataPayload());
-            dataCRUDResultVO.setOperationReturnCode(resultCode);
+            dataCRUDResultVO=DiscoverSpaceDataCRUDUtil.updateTypeData(dataCRUDInput);
         }
         dataCRUDResultVO.setOperationExecuteTime(new Date().getTime());
         return dataCRUDResultVO;
@@ -55,35 +54,28 @@ public class InfoDiscoverSpaceDataCRUDService {
     @Path("/deleteMeasurable/")
     @Produces("application/json")
     public DataCRUDResultVO deleteMeasurable(DataCRUDInputVO dataCRUDInput){
-        DataCRUDResultVO dataCRUDResultVO =new DataCRUDResultVO();
-        if(dataCRUDInput.getDiscoverSpaceName()==null||dataCRUDInput.getMeasurableId()==null||dataCRUDInput.getMeasurableTypeKind()==null){
-            dataCRUDResultVO.setOperationReturnCode(DataCRUDResultVO.operationResultCodeValue.INVALIDINPUT);
+        DataCRUDResultVO dataCRUDResultVO;
+        if(dataCRUDInput.getDiscoverSpaceName()==null||dataCRUDInput.getDataPayload()==null){
+            dataCRUDResultVO=new DataCRUDResultVO();
+            dataCRUDResultVO.setOperationReturnCode(DataCRUDResultVO.operationResultCodeValue.INVALID_INPUT);
         }else{
-            if(!DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION.equals(dataCRUDInput.getMeasurableTypeKind().trim())&&
-                    !DiscoverSpaceOperationConstant.TYPEKIND_FACT.equals(dataCRUDInput.getMeasurableTypeKind().trim())&&
-                    !DiscoverSpaceOperationConstant.TYPEKIND_RELATION.equals(dataCRUDInput.getMeasurableTypeKind().trim())){
-                dataCRUDResultVO.setOperationReturnCode(DataCRUDResultVO.operationResultCodeValue.INVALIDINPUT);
-            }else{
-                DataCRUDResultVO.operationResultCodeValue resultCode=DiscoverSpaceDataCRUDUtil.deleteMeasurable(dataCRUDInput.getDiscoverSpaceName(),dataCRUDInput.getMeasurableTypeKind().trim(),dataCRUDInput.getMeasurableId());
-                dataCRUDResultVO.setOperationReturnCode(resultCode);
-            }
+            dataCRUDResultVO=DiscoverSpaceDataCRUDUtil.deleteTypeData(dataCRUDInput);
         }
         dataCRUDResultVO.setOperationExecuteTime(new Date().getTime());
         return dataCRUDResultVO;
     }
 
-
-    @POST
-    @Path("/batchCreateRelationable/")
+    @DELETE
+    @Path("/deleteMeasurableProperties/")
     @Produces("application/json")
-    public DataCRUDResultVO batchCreateRelationable(String discoverSpaceName, String measurableTypeKind, String measurableName, String dataContent){
-        DataCRUDResultVO dataCRUDResultVO =new DataCRUDResultVO();
-        if(discoverSpaceName==null||measurableTypeKind==null||measurableName==null||dataContent==null){
-            dataCRUDResultVO.setOperationReturnCode(DataCRUDResultVO.operationResultCodeValue.INVALIDINPUT);
+    public DataCRUDResultVO deleteMeasurableProperties(DataCRUDInputVO dataCRUDInput){
+        DataCRUDResultVO dataCRUDResultVO;
+        if(dataCRUDInput.getDiscoverSpaceName()==null||dataCRUDInput.getDataPayload()==null){
+            dataCRUDResultVO=new DataCRUDResultVO();
+            dataCRUDResultVO.setOperationReturnCode(DataCRUDResultVO.operationResultCodeValue.INVALID_INPUT);
+        }else{
+            dataCRUDResultVO=DiscoverSpaceDataCRUDUtil.deleteTypeDataProperties(dataCRUDInput);
         }
-        if(DiscoverSpaceOperationConstant.TYPEKIND_DIMENSION.equals(measurableTypeKind.trim())){}
-        if(DiscoverSpaceOperationConstant.TYPEKIND_FACT.equals(measurableTypeKind.trim())){}
-
         dataCRUDResultVO.setOperationExecuteTime(new Date().getTime());
         return dataCRUDResultVO;
     }

@@ -17,6 +17,10 @@ public interface DiscoverSpaceOperationConstant {
     public static final String TYPEKIND_FACT="TYPEKIND_FACT";
     public static final String TYPEKIND_RELATION="TYPEKIND_RELATION";
 
+    public static final String PAYLOAD_DIMENSION="Dimension";
+    public static final String PAYLOAD_FACT="Fact";
+    public static final String PAYLOAD_RELATION="Relation";
+
     public static final String RELATION_DIRECTION_FROM="FROM";
     public static final String RELATION_DIRECTION_TO="TO";
     public static final String RELATION_DIRECTION_BOTH="BOTH";
