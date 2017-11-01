@@ -1,6 +1,6 @@
 package com.infoDiscover.infoAnalyse.service.restful.vo.dataCRUD;
 
-public class DataCRUDInputVO {
+public class DataCUDInputVO {
 
     private String discoverSpaceName;
     private DataPayloadWrapperVO dataPayload;

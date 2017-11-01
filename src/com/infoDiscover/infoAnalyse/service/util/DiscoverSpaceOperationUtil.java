@@ -500,7 +500,7 @@ public class DiscoverSpaceOperationUtil {
         /* Workaround finish */
     }
 
-    private static List<TypePropertyVO> loadTypePropertyVOList(List<TypeProperty> typePropertyList){
+    public static List<TypePropertyVO> loadTypePropertyVOList(List<TypeProperty> typePropertyList){
         List<TypePropertyVO> typePropertyVOList=new ArrayList<>();
         if(typePropertyList!=null){
             for(TypeProperty currentTypeProperty:typePropertyList){
@@ -649,8 +649,17 @@ public class DiscoverSpaceOperationUtil {
         return null;
     }
 
-    private static MeasurableVO getMeasurableVO(String spaceName,Measurable typeMeasurable){
+    public static MeasurableVO getMeasurableVO(String spaceName,Measurable typeMeasurable){
         MeasurableVO currentMeasurableVO=new MeasurableVO();
+        if(typeMeasurable instanceof Fact){
+            currentMeasurableVO.setRecordId(((Fact)typeMeasurable).getId());
+        }
+        if(typeMeasurable instanceof Dimension){
+            currentMeasurableVO.setRecordId(((Dimension)typeMeasurable).getId());
+        }
+        if(typeMeasurable instanceof Relation){
+            currentMeasurableVO.setRecordId(((Relation)typeMeasurable).getId());
+        }
         List<Property> currentMeasurableProperties=typeMeasurable.getProperties();
         currentMeasurableVO.setMeasurableProperties(loadMeasurablePropertyVOList(spaceName,typeMeasurable,currentMeasurableProperties));
         return currentMeasurableVO;
@@ -658,6 +667,15 @@ public class DiscoverSpaceOperationUtil {
 
     private static MeasurableVO getMeasurableVO(String spaceName,Measurable typeMeasurable,String[] targetProperties,Map<String,String> propertiesAliasNameMap){
         MeasurableVO currentMeasurableVO=new MeasurableVO();
+        if(typeMeasurable instanceof Fact){
+            currentMeasurableVO.setRecordId(((Fact)typeMeasurable).getId());
+        }
+        if(typeMeasurable instanceof Dimension){
+            currentMeasurableVO.setRecordId(((Dimension)typeMeasurable).getId());
+        }
+        if(typeMeasurable instanceof Relation){
+            currentMeasurableVO.setRecordId(((Relation)typeMeasurable).getId());
+        }
         List<Property> currentMeasurableProperties=new ArrayList<>();
         if(targetProperties!=null){
             for(String currentTargetPropertyName:targetProperties){

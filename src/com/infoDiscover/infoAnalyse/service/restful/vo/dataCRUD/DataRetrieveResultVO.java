@@ -1,18 +1,30 @@
 package com.infoDiscover.infoAnalyse.service.restful.vo.dataCRUD;
 
-public class DataCRUDResultVO {
+import com.infoDiscover.infoAnalyse.service.restful.vo.MeasurableQueryResultSetVO;
+
+public class DataRetrieveResultVO {
 
     public enum operationResultCodeValue {
-        SUCCESS,FAILURE,INVALID_INPUT,UNKNOWN,DATA_NOT_MODIFIED
+        SUCCESS,FAILURE,INVALID_INPUT,UNKNOWN
     }
 
-    public DataCRUDResultVO(){
+    public DataRetrieveResultVO(){
         this.setOperationReturnCode(operationResultCodeValue.UNKNOWN);
     }
 
+    private MeasurableQueryResultSetVO measurableQueryResultSet;
+
     private long operationExecuteTime;
+
     private operationResultCodeValue operationReturnCode;
-    private long modifiedDataCount;
+
+    public MeasurableQueryResultSetVO getMeasurableQueryResultSet() {
+        return measurableQueryResultSet;
+    }
+
+    public void setMeasurableQueryResultSet(MeasurableQueryResultSetVO measurableQueryResultSet) {
+        this.measurableQueryResultSet = measurableQueryResultSet;
+    }
 
     public long getOperationExecuteTime() {
         return operationExecuteTime;
@@ -28,13 +40,5 @@ public class DataCRUDResultVO {
 
     public void setOperationReturnCode(operationResultCodeValue operationReturnCode) {
         this.operationReturnCode = operationReturnCode;
-    }
-
-    public long getModifiedDataCount() {
-        return modifiedDataCount;
-    }
-
-    public void setModifiedDataCount(long modifiedDataCount) {
-        this.modifiedDataCount = modifiedDataCount;
     }
 }
