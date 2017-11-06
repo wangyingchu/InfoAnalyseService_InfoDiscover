@@ -492,7 +492,7 @@ public class DiscoverSpaceOperationUtil {
         return currentRelationTypeInfoVO;
     }
 
-    private static void refreshTypeDefinitionInfo(InfoDiscoverSpace targetSpace) throws InfoDiscoveryEngineDataMartException {
+    public static void refreshTypeDefinitionInfo(InfoDiscoverSpace targetSpace) throws InfoDiscoveryEngineDataMartException {
         /* Workaround start - used to commit and reopen transaction, so that can get Type data changed by other applications*/
         String tempRelationTypeName="tempRelationType"+new Date().getTime();
         targetSpace.addDimensionType(tempRelationTypeName);
