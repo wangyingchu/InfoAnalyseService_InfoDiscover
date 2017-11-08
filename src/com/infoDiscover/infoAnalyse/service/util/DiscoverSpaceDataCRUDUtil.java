@@ -606,7 +606,6 @@ public class DiscoverSpaceDataCRUDUtil {
         return targetFilteringItem;
     }
 
-
     private static Object getAttributeValue(String attributeType, Object attributeValueObj){
         Object attributeValue=null;
         if("String".equals(attributeType)){

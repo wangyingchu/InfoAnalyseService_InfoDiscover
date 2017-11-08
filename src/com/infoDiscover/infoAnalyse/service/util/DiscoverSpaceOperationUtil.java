@@ -321,8 +321,6 @@ public class DiscoverSpaceOperationUtil {
         try {
             targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
 
-            refreshTypeDefinitionInfo(targetSpace);
-
             List<String> factTypesList=targetSpace.getFactTypesList();
             if(factTypesList!=null) {
                 DiscoverSpaceStatisticHelper discoverSpaceStatisticHelper = DiscoverEngineComponentFactory.getDiscoverSpaceStatisticHelper();
@@ -335,9 +333,7 @@ public class DiscoverSpaceOperationUtil {
                     factTypeInfoVOList.add(currentFactTypeInfoVO);
                 }
             }
-        } catch (InfoDiscoveryEngineDataMartException e) {
-            e.printStackTrace();
-        } finally {
+        }finally {
             if(targetSpace!=null){
                 targetSpace.closeSpace();
             }
@@ -360,8 +356,6 @@ public class DiscoverSpaceOperationUtil {
         InfoDiscoverSpace targetSpace=null;
         try {
             targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
-
-            refreshTypeDefinitionInfo(targetSpace);
 
             List<String> rootDimensionTypesList=targetSpace.getRootDimensionTypesList();
             if(rootDimensionTypesList!=null){
@@ -386,9 +380,7 @@ public class DiscoverSpaceOperationUtil {
                     dimensionTypeInfoVOList.add(currentDimensionTypeInfoVO);
                 }
             }
-        } catch (InfoDiscoveryEngineDataMartException e) {
-            e.printStackTrace();
-        } finally {
+        }finally {
             if(targetSpace!=null){
                 targetSpace.closeSpace();
             }
@@ -428,9 +420,6 @@ public class DiscoverSpaceOperationUtil {
         InfoDiscoverSpace targetSpace=null;
         try {
             targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
-
-            refreshTypeDefinitionInfo(targetSpace);
-
             List<String> rootRelationTypesList=targetSpace.getRootRelationTypesList();
             if(rootRelationTypesList!=null){
                 DiscoverSpaceStatisticHelper discoverSpaceStatisticHelper= DiscoverEngineComponentFactory.getDiscoverSpaceStatisticHelper();
@@ -455,9 +444,7 @@ public class DiscoverSpaceOperationUtil {
                     relationTypeInfoVOList.add(currentRelationTypeInfoVO);
                 }
             }
-        } catch (InfoDiscoveryEngineDataMartException e) {
-            e.printStackTrace();
-        } finally {
+        }finally {
             if(targetSpace!=null){
                 targetSpace.closeSpace();
             }
@@ -492,14 +479,6 @@ public class DiscoverSpaceOperationUtil {
         return currentRelationTypeInfoVO;
     }
 
-    public static void refreshTypeDefinitionInfo(InfoDiscoverSpace targetSpace) throws InfoDiscoveryEngineDataMartException {
-        /* Workaround start - used to commit and reopen transaction, so that can get Type data changed by other applications*/
-        String tempRelationTypeName="tempRelationType"+new Date().getTime();
-        targetSpace.addDimensionType(tempRelationTypeName);
-        targetSpace.removeDimensionType(tempRelationTypeName);
-        /* Workaround finish */
-    }
-
     public static List<TypePropertyVO> loadTypePropertyVOList(List<TypeProperty> typePropertyList){
         List<TypePropertyVO> typePropertyVOList=new ArrayList<>();
         if(typePropertyList!=null){
@@ -522,10 +501,6 @@ public class DiscoverSpaceOperationUtil {
         try {
             targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
             boolean dimensionTypeExist=targetSpace.hasDimensionType(dimensionTypeName);
-            if(!dimensionTypeExist){
-                refreshTypeDefinitionInfo(targetSpace);
-            }
-            dimensionTypeExist=targetSpace.hasDimensionType(dimensionTypeName);
             if(dimensionTypeExist){
                 DimensionType targetDimensionType=targetSpace.getDimensionType(dimensionTypeName);
                 List<TypeProperty> typePropertyList=targetDimensionType.getTypeProperties();
@@ -557,14 +532,11 @@ public class DiscoverSpaceOperationUtil {
             }else{
                 return null;
             }
-        } catch (InfoDiscoveryEngineDataMartException e) {
-            e.printStackTrace();
-        } finally {
+        }finally {
             if(targetSpace!=null){
                 targetSpace.closeSpace();
             }
         }
-        return null;
     }
 
     public static FactTypeSummaryVO getFactTypeDetail(String spaceName,String factTypeName){
@@ -572,10 +544,6 @@ public class DiscoverSpaceOperationUtil {
         try {
             targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
             boolean factTypeExist=targetSpace.hasFactType(factTypeName);
-            if(!factTypeExist){
-                refreshTypeDefinitionInfo(targetSpace);
-            }
-            factTypeExist=targetSpace.hasFactType(factTypeName);
             if(factTypeExist){
                 FactType targetFactType=targetSpace.getFactType(factTypeName);
                 List<TypeProperty> typePropertyList=targetFactType.getTypeProperties();
@@ -590,14 +558,11 @@ public class DiscoverSpaceOperationUtil {
             }else{
                 return null;
             }
-        } catch (InfoDiscoveryEngineDataMartException e) {
-            e.printStackTrace();
-        } finally {
+        }finally {
             if(targetSpace!=null){
                 targetSpace.closeSpace();
             }
         }
-        return null;
     }
 
     public static RelationTypeSummaryVO getRelationTypeDetail(String spaceName,String relationTypeName){
@@ -605,10 +570,6 @@ public class DiscoverSpaceOperationUtil {
         try {
             targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
             boolean relationTypeExist=targetSpace.hasRelationType(relationTypeName);
-            if(!relationTypeExist){
-                refreshTypeDefinitionInfo(targetSpace);
-            }
-            relationTypeExist=targetSpace.hasRelationType(relationTypeName);
             if(relationTypeExist){
                 RelationType targetRelationType=targetSpace.getRelationType(relationTypeName);
                 List<TypeProperty> typePropertyList=targetRelationType.getTypeProperties();
@@ -639,14 +600,11 @@ public class DiscoverSpaceOperationUtil {
             }else{
                 return null;
             }
-        } catch (InfoDiscoveryEngineDataMartException e) {
-            e.printStackTrace();
-        } finally {
+        }finally {
             if(targetSpace!=null){
                 targetSpace.closeSpace();
             }
         }
-        return null;
     }
 
     public static MeasurableVO getMeasurableVO(String spaceName,Measurable typeMeasurable){
@@ -725,10 +683,6 @@ public class DiscoverSpaceOperationUtil {
             targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
             boolean hasTargetType=targetSpace.hasDimensionType(dimensionTypeName);
             if(!hasTargetType){
-                refreshTypeDefinitionInfo(targetSpace);
-            }
-            hasTargetType=targetSpace.hasDimensionType(dimensionTypeName);
-            if(!hasTargetType){
                 return null;
             }else{
                 MeasurableQueryResultSetVO measurableQueryResultSetVO=new MeasurableQueryResultSetVO();
@@ -768,8 +722,6 @@ public class DiscoverSpaceOperationUtil {
 
                 return measurableQueryResultSetVO;
             }
-        } catch (InfoDiscoveryEngineDataMartException e) {
-            e.printStackTrace();
         } catch (InfoDiscoveryEngineInfoExploreException e) {
             e.printStackTrace();
         } catch (InfoDiscoveryEngineRuntimeException e) {
@@ -787,10 +739,6 @@ public class DiscoverSpaceOperationUtil {
         try {
             targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
             boolean hasTargetType=targetSpace.hasDimensionType(dimensionTypeName);
-            if(!hasTargetType){
-                refreshTypeDefinitionInfo(targetSpace);
-            }
-            hasTargetType=targetSpace.hasDimensionType(dimensionTypeName);
             if(!hasTargetType){
                 return null;
             }else{
@@ -820,8 +768,6 @@ public class DiscoverSpaceOperationUtil {
                 measurableQueryResultSetVO.setQuerySQL(querySQL);
                 return measurableQueryResultSetVO;
             }
-        } catch (InfoDiscoveryEngineDataMartException e) {
-            e.printStackTrace();
         } catch (InfoDiscoveryEngineInfoExploreException e) {
             e.printStackTrace();
         } catch (InfoDiscoveryEngineRuntimeException e) {
@@ -839,10 +785,6 @@ public class DiscoverSpaceOperationUtil {
         try {
             targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
             boolean hasTargetType=targetSpace.hasRelationType(relationTypeName);
-            if(!hasTargetType){
-                refreshTypeDefinitionInfo(targetSpace);
-            }
-            hasTargetType=targetSpace.hasRelationType(relationTypeName);
             if(!hasTargetType){
                 return null;
             }else{
@@ -883,8 +825,6 @@ public class DiscoverSpaceOperationUtil {
 
                 return measurableQueryResultSetVO;
             }
-        } catch (InfoDiscoveryEngineDataMartException e) {
-            e.printStackTrace();
         } catch (InfoDiscoveryEngineInfoExploreException e) {
             e.printStackTrace();
         } catch (InfoDiscoveryEngineRuntimeException e) {
@@ -902,10 +842,6 @@ public class DiscoverSpaceOperationUtil {
         try {
             targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
             boolean hasTargetType=targetSpace.hasRelationType(relationTypeName);
-            if(!hasTargetType){
-                refreshTypeDefinitionInfo(targetSpace);
-            }
-            hasTargetType=targetSpace.hasRelationType(relationTypeName);
             if(!hasTargetType){
                 return null;
             }else{
@@ -935,8 +871,6 @@ public class DiscoverSpaceOperationUtil {
                 measurableQueryResultSetVO.setQuerySQL(querySQL);
                 return measurableQueryResultSetVO;
             }
-        } catch (InfoDiscoveryEngineDataMartException e) {
-            e.printStackTrace();
         } catch (InfoDiscoveryEngineInfoExploreException e) {
             e.printStackTrace();
         } catch (InfoDiscoveryEngineRuntimeException e) {
@@ -954,10 +888,6 @@ public class DiscoverSpaceOperationUtil {
         try {
             targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
             boolean hasTargetType=targetSpace.hasFactType(factTypeName);
-            if(!hasTargetType){
-                refreshTypeDefinitionInfo(targetSpace);
-            }
-            hasTargetType=targetSpace.hasFactType(factTypeName);
             if(!hasTargetType){
                 return null;
             }else{
@@ -998,8 +928,6 @@ public class DiscoverSpaceOperationUtil {
 
                 return measurableQueryResultSetVO;
             }
-        } catch (InfoDiscoveryEngineDataMartException e) {
-            e.printStackTrace();
         } catch (InfoDiscoveryEngineInfoExploreException e) {
             e.printStackTrace();
         } catch (InfoDiscoveryEngineRuntimeException e) {
@@ -1017,10 +945,6 @@ public class DiscoverSpaceOperationUtil {
         try {
             targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
             boolean hasTargetType=targetSpace.hasFactType(factTypeName);
-            if(!hasTargetType){
-                refreshTypeDefinitionInfo(targetSpace);
-            }
-            hasTargetType=targetSpace.hasFactType(factTypeName);
             if(!hasTargetType){
                 return null;
             }else{
@@ -1050,8 +974,6 @@ public class DiscoverSpaceOperationUtil {
                 measurableQueryResultSetVO.setQuerySQL(querySQL);
                 return measurableQueryResultSetVO;
             }
-        } catch (InfoDiscoveryEngineDataMartException e) {
-            e.printStackTrace();
         } catch (InfoDiscoveryEngineInfoExploreException e) {
             e.printStackTrace();
         } catch (InfoDiscoveryEngineRuntimeException e) {
@@ -1073,10 +995,6 @@ public class DiscoverSpaceOperationUtil {
         try {
             targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
             boolean hasTargetType=targetSpace.hasFactType(factTypeName);
-            if(!hasTargetType){
-                refreshTypeDefinitionInfo(targetSpace);
-            }
-            hasTargetType=targetSpace.hasFactType(factTypeName);
             if(!hasTargetType){
                 return null;
             }else{
@@ -1110,8 +1028,6 @@ public class DiscoverSpaceOperationUtil {
                 measurableQueryResultSetVO.setQuerySQL(querySQL);
                 return measurableQueryResultSetVO;
             }
-        } catch (InfoDiscoveryEngineDataMartException e) {
-            e.printStackTrace();
         } catch (InfoDiscoveryEngineInfoExploreException e) {
             e.printStackTrace();
         } catch (InfoDiscoveryEngineRuntimeException e) {
@@ -1133,10 +1049,6 @@ public class DiscoverSpaceOperationUtil {
         try {
             targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
             boolean hasTargetType=targetSpace.hasDimensionType(dimensionTypeName);
-            if(!hasTargetType){
-                refreshTypeDefinitionInfo(targetSpace);
-            }
-            hasTargetType=targetSpace.hasDimensionType(dimensionTypeName);
             if(!hasTargetType){
                 return null;
             }else{
@@ -1170,8 +1082,6 @@ public class DiscoverSpaceOperationUtil {
                 measurableQueryResultSetVO.setQuerySQL(querySQL);
                 return measurableQueryResultSetVO;
             }
-        } catch (InfoDiscoveryEngineDataMartException e) {
-            e.printStackTrace();
         } catch (InfoDiscoveryEngineInfoExploreException e) {
             e.printStackTrace();
         } catch (InfoDiscoveryEngineRuntimeException e) {
@@ -1193,10 +1103,6 @@ public class DiscoverSpaceOperationUtil {
         try {
             targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
             boolean hasTargetType=targetSpace.hasRelationType(relationTypeName);
-            if(!hasTargetType){
-                refreshTypeDefinitionInfo(targetSpace);
-            }
-            hasTargetType=targetSpace.hasRelationType(relationTypeName);
             if(!hasTargetType){
                 return null;
             }else{
@@ -1230,8 +1136,6 @@ public class DiscoverSpaceOperationUtil {
                 measurableQueryResultSetVO.setQuerySQL(querySQL);
                 return measurableQueryResultSetVO;
             }
-        } catch (InfoDiscoveryEngineDataMartException e) {
-            e.printStackTrace();
         } catch (InfoDiscoveryEngineInfoExploreException e) {
             e.printStackTrace();
         } catch (InfoDiscoveryEngineRuntimeException e) {
@@ -1524,10 +1428,6 @@ public class DiscoverSpaceOperationUtil {
             targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
             boolean hasTargetType=targetSpace.hasFactType(factTypeName);
             if(!hasTargetType){
-                refreshTypeDefinitionInfo(targetSpace);
-            }
-            hasTargetType=targetSpace.hasFactType(factTypeName);
-            if(!hasTargetType){
                 return null;
             }else{
                 InformationExplorer ie=targetSpace.getInformationExplorer();
@@ -1539,8 +1439,6 @@ public class DiscoverSpaceOperationUtil {
                 List<Fact> resultFactList=ie.discoverFacts(ep);
                 return generateMeasurableTypePropertiesCSV(resultFactList,properties);
             }
-        } catch (InfoDiscoveryEngineDataMartException e) {
-            e.printStackTrace();
         } catch (InfoDiscoveryEngineInfoExploreException e) {
             e.printStackTrace();
         } catch (InfoDiscoveryEngineRuntimeException e) {
@@ -1559,10 +1457,6 @@ public class DiscoverSpaceOperationUtil {
             targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
             boolean hasTargetType=targetSpace.hasDimensionType(dimensionTypeName);
             if(!hasTargetType){
-                refreshTypeDefinitionInfo(targetSpace);
-            }
-            hasTargetType=targetSpace.hasDimensionType(dimensionTypeName);
-            if(!hasTargetType){
                 return null;
             }else{
                 InformationExplorer ie=targetSpace.getInformationExplorer();
@@ -1574,8 +1468,6 @@ public class DiscoverSpaceOperationUtil {
                 List<Dimension> resultDimensionList=ie.discoverDimensions(ep);
                 return generateMeasurableTypePropertiesCSV(resultDimensionList,properties);
             }
-        } catch (InfoDiscoveryEngineDataMartException e) {
-            e.printStackTrace();
         } catch (InfoDiscoveryEngineInfoExploreException e) {
             e.printStackTrace();
         } catch (InfoDiscoveryEngineRuntimeException e) {
@@ -1594,10 +1486,6 @@ public class DiscoverSpaceOperationUtil {
             targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
             boolean hasTargetType=targetSpace.hasRelationType(relationTypeName);
             if(!hasTargetType){
-                refreshTypeDefinitionInfo(targetSpace);
-            }
-            hasTargetType=targetSpace.hasRelationType(relationTypeName);
-            if(!hasTargetType){
                 return null;
             }else{
                 InformationExplorer ie=targetSpace.getInformationExplorer();
@@ -1609,8 +1497,6 @@ public class DiscoverSpaceOperationUtil {
                 List<Relation> resultRelationList=ie.discoverRelations(ep);
                 return generateMeasurableTypePropertiesCSV(resultRelationList,properties);
             }
-        } catch (InfoDiscoveryEngineDataMartException e) {
-            e.printStackTrace();
         } catch (InfoDiscoveryEngineInfoExploreException e) {
             e.printStackTrace();
         } catch (InfoDiscoveryEngineRuntimeException e) {
@@ -1677,10 +1563,6 @@ public class DiscoverSpaceOperationUtil {
             targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
             boolean hasTargetType=targetSpace.hasFactType(factTypeName);
             if(!hasTargetType){
-                refreshTypeDefinitionInfo(targetSpace);
-            }
-            hasTargetType=targetSpace.hasFactType(factTypeName);
-            if(!hasTargetType){
                 return null;
             }else{
                 InformationExplorer ie=targetSpace.getInformationExplorer();
@@ -1692,8 +1574,6 @@ public class DiscoverSpaceOperationUtil {
                 List<Fact> resultFactList=ie.discoverFacts(ep);
                 return generateMeasurableTypePropertiesJSON(resultFactList,properties);
             }
-        } catch (InfoDiscoveryEngineDataMartException e) {
-            e.printStackTrace();
         } catch (InfoDiscoveryEngineInfoExploreException e) {
             e.printStackTrace();
         } catch (InfoDiscoveryEngineRuntimeException e) {
@@ -1712,18 +1592,12 @@ public class DiscoverSpaceOperationUtil {
             targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
             boolean hasTargetType=targetSpace.hasFactType(factTypeName);
             if(!hasTargetType){
-                refreshTypeDefinitionInfo(targetSpace);
-            }
-            hasTargetType=targetSpace.hasFactType(factTypeName);
-            if(!hasTargetType){
                 return null;
             }else{
                 InformationExplorer ie=targetSpace.getInformationExplorer();
                 List<Measurable> resultMeasurableList= ie.discoverMeasurablesByQuerySQL(InformationType.FACT,factTypeName,querySQL);
                 return generateMeasurableTypePropertiesJSON(resultMeasurableList,properties);
             }
-        } catch (InfoDiscoveryEngineDataMartException e) {
-            e.printStackTrace();
         } catch (InfoDiscoveryEngineInfoExploreException e) {
             e.printStackTrace();
         } catch (InfoDiscoveryEngineRuntimeException e) {
@@ -1752,10 +1626,6 @@ public class DiscoverSpaceOperationUtil {
             targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
             boolean hasTargetType=targetSpace.hasFactType(factTypeName);
             if(!hasTargetType){
-                refreshTypeDefinitionInfo(targetSpace);
-            }
-            hasTargetType=targetSpace.hasFactType(factTypeName);
-            if(!hasTargetType){
                 return null;
             }else{
                 InformationExplorer ie=targetSpace.getInformationExplorer();
@@ -1763,8 +1633,6 @@ public class DiscoverSpaceOperationUtil {
                 List<Map<String,String>> propertyRowData= generateMeasurableTypePropertiesJSON(spaceName,resultMeasurableList,properties,propertiesAliasNameMap);
                 measurablePropertiesQueryBriefResultSetVO.setPropertyRowData(propertyRowData);
             }
-        } catch (InfoDiscoveryEngineDataMartException e) {
-            e.printStackTrace();
         } catch (InfoDiscoveryEngineInfoExploreException e) {
             e.printStackTrace();
         } catch (InfoDiscoveryEngineRuntimeException e) {
@@ -1783,10 +1651,6 @@ public class DiscoverSpaceOperationUtil {
             targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
             boolean hasTargetType=targetSpace.hasDimensionType(dimensionTypeName);
             if(!hasTargetType){
-                refreshTypeDefinitionInfo(targetSpace);
-            }
-            hasTargetType=targetSpace.hasDimensionType(dimensionTypeName);
-            if(!hasTargetType){
                 return null;
             }else{
                 InformationExplorer ie=targetSpace.getInformationExplorer();
@@ -1798,8 +1662,6 @@ public class DiscoverSpaceOperationUtil {
                 List<Dimension> resultDimensionList=ie.discoverDimensions(ep);
                 return generateMeasurableTypePropertiesJSON(resultDimensionList,properties);
             }
-        } catch (InfoDiscoveryEngineDataMartException e) {
-            e.printStackTrace();
         } catch (InfoDiscoveryEngineInfoExploreException e) {
             e.printStackTrace();
         } catch (InfoDiscoveryEngineRuntimeException e) {
@@ -1818,18 +1680,12 @@ public class DiscoverSpaceOperationUtil {
             targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
             boolean hasTargetType=targetSpace.hasDimensionType(dimensionTypeName);
             if(!hasTargetType){
-                refreshTypeDefinitionInfo(targetSpace);
-            }
-            hasTargetType=targetSpace.hasDimensionType(dimensionTypeName);
-            if(!hasTargetType){
                 return null;
             }else{
                 InformationExplorer ie=targetSpace.getInformationExplorer();
                 List<Measurable> resultMeasurableList= ie.discoverMeasurablesByQuerySQL(InformationType.DIMENSION,dimensionTypeName,querySQL);
                 return generateMeasurableTypePropertiesJSON(resultMeasurableList,properties);
             }
-        } catch (InfoDiscoveryEngineDataMartException e) {
-            e.printStackTrace();
         } catch (InfoDiscoveryEngineInfoExploreException e) {
             e.printStackTrace();
         } catch (InfoDiscoveryEngineRuntimeException e) {
@@ -1858,10 +1714,6 @@ public class DiscoverSpaceOperationUtil {
             targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
             boolean hasTargetType=targetSpace.hasDimensionType(dimensionTypeName);
             if(!hasTargetType){
-                refreshTypeDefinitionInfo(targetSpace);
-            }
-            hasTargetType=targetSpace.hasDimensionType(dimensionTypeName);
-            if(!hasTargetType){
                 return null;
             }else{
                 InformationExplorer ie=targetSpace.getInformationExplorer();
@@ -1869,8 +1721,6 @@ public class DiscoverSpaceOperationUtil {
                 List<Map<String,String>> propertyRowData= generateMeasurableTypePropertiesJSON(spaceName,resultMeasurableList,properties,propertiesAliasNameMap);
                 measurablePropertiesQueryBriefResultSetVO.setPropertyRowData(propertyRowData);
             }
-        } catch (InfoDiscoveryEngineDataMartException e) {
-            e.printStackTrace();
         } catch (InfoDiscoveryEngineInfoExploreException e) {
             e.printStackTrace();
         } catch (InfoDiscoveryEngineRuntimeException e) {
@@ -1889,10 +1739,6 @@ public class DiscoverSpaceOperationUtil {
             targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
             boolean hasTargetType=targetSpace.hasRelationType(relationTypeName);
             if(!hasTargetType){
-                refreshTypeDefinitionInfo(targetSpace);
-            }
-            hasTargetType=targetSpace.hasRelationType(relationTypeName);
-            if(!hasTargetType){
                 return null;
             }else{
                 InformationExplorer ie=targetSpace.getInformationExplorer();
@@ -1904,8 +1750,6 @@ public class DiscoverSpaceOperationUtil {
                 List<Relation> resultRelationList=ie.discoverRelations(ep);
                 return generateMeasurableTypePropertiesJSON(resultRelationList,properties);
             }
-        } catch (InfoDiscoveryEngineDataMartException e) {
-            e.printStackTrace();
         } catch (InfoDiscoveryEngineInfoExploreException e) {
             e.printStackTrace();
         } catch (InfoDiscoveryEngineRuntimeException e) {
@@ -1924,18 +1768,12 @@ public class DiscoverSpaceOperationUtil {
             targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
             boolean hasTargetType=targetSpace.hasRelationType(relationTypeName);
             if(!hasTargetType){
-                refreshTypeDefinitionInfo(targetSpace);
-            }
-            hasTargetType=targetSpace.hasRelationType(relationTypeName);
-            if(!hasTargetType){
                 return null;
             }else{
                 InformationExplorer ie=targetSpace.getInformationExplorer();
                 List<Measurable> resultMeasurableList= ie.discoverMeasurablesByQuerySQL(InformationType.RELATION,relationTypeName,querySQL);
                 return generateMeasurableTypePropertiesJSON(resultMeasurableList,properties);
             }
-        } catch (InfoDiscoveryEngineDataMartException e) {
-            e.printStackTrace();
         } catch (InfoDiscoveryEngineInfoExploreException e) {
             e.printStackTrace();
         } catch (InfoDiscoveryEngineRuntimeException e) {
@@ -1964,10 +1802,6 @@ public class DiscoverSpaceOperationUtil {
             targetSpace = DiscoverEngineComponentFactory.connectInfoDiscoverSpace(spaceName);
             boolean hasTargetType=targetSpace.hasRelationType(relationTypeName);
             if(!hasTargetType){
-                refreshTypeDefinitionInfo(targetSpace);
-            }
-            hasTargetType=targetSpace.hasRelationType(relationTypeName);
-            if(!hasTargetType){
                 return null;
             }else{
                 InformationExplorer ie=targetSpace.getInformationExplorer();
@@ -1975,8 +1809,6 @@ public class DiscoverSpaceOperationUtil {
                 List<Map<String,String>> propertyRowData= generateMeasurableTypePropertiesJSON(spaceName,resultMeasurableList,properties,propertiesAliasNameMap);
                 measurablePropertiesQueryBriefResultSetVO.setPropertyRowData(propertyRowData);
             }
-        } catch (InfoDiscoveryEngineDataMartException e) {
-            e.printStackTrace();
         } catch (InfoDiscoveryEngineInfoExploreException e) {
             e.printStackTrace();
         } catch (InfoDiscoveryEngineRuntimeException e) {
