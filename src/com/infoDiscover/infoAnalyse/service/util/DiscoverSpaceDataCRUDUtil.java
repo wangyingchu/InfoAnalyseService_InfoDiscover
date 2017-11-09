@@ -585,14 +585,14 @@ public class DiscoverSpaceDataCRUDUtil {
                 FilteringItemVO.matchingType similarMatchType=filteringItemVO.getMatchingType();
                 String matchingTypeString=similarMatchType.toString();
                 SimilarFilteringItem similarFilteringItem=null;
-                if(matchingTypeString.equals(SimilarFilteringItem.MatchingType.BeginWith)){
+                if(matchingTypeString.equals(""+SimilarFilteringItem.MatchingType.BeginWith)){
                     similarFilteringItem=new SimilarFilteringItem(attributeName,attributeValue.toString(),SimilarFilteringItem.MatchingType.BeginWith);
                 }
-                if(matchingTypeString.equals(SimilarFilteringItem.MatchingType.Contain)){
+                if(matchingTypeString.equals(""+SimilarFilteringItem.MatchingType.Contain)){
                     similarFilteringItem=new SimilarFilteringItem(attributeName,attributeValue.toString(),SimilarFilteringItem.MatchingType.Contain);
                 }
 
-                if(matchingTypeString.equals(SimilarFilteringItem.MatchingType.EndWith)){
+                if(matchingTypeString.equals(""+SimilarFilteringItem.MatchingType.EndWith)){
                     similarFilteringItem=new SimilarFilteringItem(attributeName,attributeValue.toString(),SimilarFilteringItem.MatchingType.EndWith);
                 }
                 if(similarFilteringItem!=null){
