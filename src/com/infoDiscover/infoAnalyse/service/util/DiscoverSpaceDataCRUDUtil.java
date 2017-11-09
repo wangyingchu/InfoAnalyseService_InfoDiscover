@@ -607,6 +607,9 @@ public class DiscoverSpaceDataCRUDUtil {
     }
 
     private static Object getAttributeValue(String attributeType, Object attributeValueObj){
+        if(attributeValueObj==null){
+            return null;
+        }
         Object attributeValue=null;
         if("String".equals(attributeType)){
             attributeValue=attributeValueObj.toString();
